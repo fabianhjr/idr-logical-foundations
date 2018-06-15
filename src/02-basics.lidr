@@ -302,11 +302,94 @@ should include either a variable (as above) or a constant of appropriate type
 constructor except red." (The wildcard pattern `_` has the same effect as the
 dummy pattern variable `p` in the definition of monochrome.)
 
+=== Numbers
+
+  An even more interesting way of defining a type is to allow its constructors
+to take arguments from the very same type — that is, to allow the rules
+describing its elements to be inductive.
 
 
-  <!-- References -->
+  For example, we can define (a unary representation of) natural numbers as
+follows:
 
+> data Nat = Z
+>          | S Nat
 
+  The clauses of this definition can be read:
+
+  - `Z` is a natural number.
+  - `S` can be put in front of a natural number to yield another one --- if `n`
+    is a natural number, then `S n` is too.
+
+  Again, let's look at this in a little more detail. The definition of nat says
+how expressions in the set nat can be built:
+
+  - `Z` and `S` are constructors;
+  - The expression `Z` belongs to the set `Nat`;
+  - If `n` is an expression belonging to the set `Nat`, then `S n` is also an
+    expression belonging to the set `Nat`;
+  - And expressions formed in these two ways are the only ones belonging to the
+    set `Nat`.
+
+  The same rules apply for our definitions of `Day`, `Bool`, `Color`, etc.
+
+  The above conditions are the precise force of the _Inductive Types_. They
+imply that the expression `O`, the expression `S O`, the expression `S (S O)`,
+the expression `S (S (S O))`, and so on all belong to the set `Nat`, while other
+expressions built from data constructors, like `True`, `True && False`,
+`S (S False)`, and `Z (Z (Z S))` do not.
+
+  A critical point here is that what we've done so far is just to define a
+_representation_ of numbers: a way of writing them down. The names `Z` and `S`
+are arbitrary, and at this point they have no special meaning --- they are just
+two different marks that we can use to write down numbers (together with a rule
+that says any `Nat` will be written as some string of `S` marks followed by a
+`Z`). If we like, we can write essentially the same definition this way:
+
+> data Nat' = Stop
+>           | Tick Nat'
+
+  The _interpretation_ of these marks comes from how we use them to compute.
+
+  We can do this by writing functions that pattern match on representations of
+natural numbers just as we did above with booleans and days — for example, here
+is the predecessor function:
+
+> pred : Nat -> Nat
+> pred n = case n of
+>              Z    => Z
+>              S n' => n'
+
+  The second branch can be read: "if `n` has the form `S n'` for some `n'`, then
+return `n'`."
+
+  Because natural numbers are such a pervasive form of data, Idris provides a
+bit of built-in magic for parsing and printing them: ordinary arabic numerals
+can be used as an alternative to the "unary" notation defined by the
+constructors `Z` and `S`. Idris prints numbers in arabic form by default:
+
+```idris
+...> (S (S (S (S Z))))
+4 : Nat
+```
+
+  <!--- TODO: toInteger -->
+  <!--- TODO: fromInteger -->
+
+> minusTwo : Nat -> Nat
+> minusTwo n = case n of
+>                  Z   => Z
+>                  S Z => Z
+>                  S (S n') => n'
+
+```idris
+...> minusTwo 4
+2 : Nat
+```
+
+  <!---            -->
+  <!--- References -->
+  <!---            -->
 
 [Prelude.Bool]: https://www.idris-lang.org/docs/current/prelude_doc/docs/Prelude.Bool.html
 [Idris library documentation]: https://www.idris-lang.org/docs/current/base_doc/
