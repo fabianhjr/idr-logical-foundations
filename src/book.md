@@ -1,8 +1,8 @@
 ---
 title:  Logical Foundations in Idris
 author:
- - Benjamin C. Pierce, et al. (Logical Foundations - Version 5.5)
- - Eric Bailey, et al. (Software Foundations - 2016)
+ - Benjamin C. Pierce et al.
+ - Eric Bailey et al.
 language: en
 
 documentclass: amsbook
@@ -10,7 +10,7 @@ classoption: twoside
 papersize: b5
 geometry: margin=1in
 
-monofont: Monoid
+monofont: Fira Code
 
 toc: true
 toc-depth: 1

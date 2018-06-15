@@ -57,8 +57,8 @@ of the definition can be read "Monday is a day, Tuesday is a day, etc."
 
   Having defined `Day`, we can write functions that operate on days.
 
-> next_weekday : Day -> Day
-> next_weekday d = case d of
+> nextWeekday : Day -> Day
+> nextWeekday d = case d of
 >                      Monday    => Tuesday
 >                      Tuesday   => Wednesday
 >                      Wednesday => Thursday
@@ -78,14 +78,14 @@ There are actually two different ways to do this in Idris. First, we can load
 the file intro an interpreter and evaluate an expression involving next_weekday.
 
 ```idris
-...> next_weekday Monday
+...> nextWeekday Monday
 Tuesday : Day
 ```
 
   Second, we can record what we _expect_ the result to be in the form of a
 Type equality:
 
-> test_next_weekday : (next_weekday (next_weekday Sunday)) = Tuesday
+> test_next_weekday : (nextWeekday (nextWeekday Sunday)) = Tuesday
 
   This declaration does two things: it makes an assertion (that the second
 weekday after sunday is tuesday), and it gives the assertion a name that can be
@@ -98,10 +98,6 @@ verify it, like this:
 essentially this can be read as "The assertion we've just made can be proved by
 observing that both sides of the equality evaluate to the same thing, after some
 simplification."
-
-=== Type Holes
-
-  <!--- TODO: Idris Holes -->
 
 === Homework Submission Guidelines
 
@@ -117,7 +113,7 @@ be careful to follow these rules:
   - Do not delete exercises. If you skip an exercise (e.g., because it is marked
     Optional, or because you can't solve it), it is OK to leave a partial proof
     in your .lidr file, but in this case please make sure it has _holes_ where
-    needed. (So that `idris --check --total` passes)
+    needed. (So that `make test` passes)
   - It is fine to use additional definitions (of helper functions, useful
     lemmas, etc.) in your solutions. You can put these between the exercise
     header and the theorem you are asked to prove.
@@ -166,6 +162,145 @@ truth table --- for the `or` function:
 > test_or3 = Refl
 > test_or4 : (or True  True)  = True
 > test_or4 = Refl
+
+  We can also introduce some familiar syntax for the boolean operations we have
+just defined. Infix operatores need to have a `fixity` declaration that
+specifies the association order and order presedence. This operations will be
+declared as right associative and with a presedence level of 4.
+
+> infixr 4 ||, &&
+
+> (||) : Bool -> Bool -> Bool
+> (||) = or
+> (&&) : Bool -> Bool -> Bool
+> (&&) = and
+
+> test_or5 : False || False || True = True
+> test_or5 = Refl
+
+=== Type Holes
+
+  <!--- TODO: Idris Holes -->
+
+=== Exercises
+
+==== Exercise: 1 star (nand)
+
+  Remove the type holes and complete the definition of the following function;
+then make sure that the assertions below can each be verified by Idris. (Remove
+the type holes and fill in each proof, following the model of the or tests
+above.) The function should return True if either or both of its inputs are
+False.
+
+> nand : Bool -> Bool -> Bool
+> nand b1 b2 = ?nand_def
+
+> test_nand1 : (nand True  False) = True
+> test_nand1 = ?nand1
+> test_nand2 : (nand False False) = True
+> test_nand2 = ?nand2
+> test_nand3 : (nand False True)  = True
+> test_nand3 = ?nand3
+> test_nand4 : (nand True  True)  = False
+> test_nand4 = ?nand4
+
+==== Exercise: 1 star (and3)
+
+  Do the same for the and3 function below. This function should return true when
+all of its inputs are true, and false otherwise.
+
+> and3 : Bool -> Bool -> Bool -> Bool
+> and3 = ?and3_def
+
+> test_and3_1 : (and3 True  True  True)  = True
+> test_and3_1 = ?and3_1
+> test_and3_2 : (and3 False True  True)  = False
+> test_and3_2 = ?and3_2
+> test_and3_3 : (and3 True  False True)  = False
+> test_and3_3 = ?and3_3
+> test_and3_4 : (and3 True  True  False) = False
+> test_and3_4 = ?and3_4
+
+=== Function Types
+
+  Every expression in Idris has a type, describing what sort of thing it
+computes. The `:t` command asks Idris to print the type of an expression.
+
+```idris
+...> :t True
+True : Bool
+...> :t not True
+not True : Bool
+```
+
+  Functions like `not` itself are also data values, just like True and False.
+Their types are called function types, and they are written with arrows.
+
+```idris
+...> :t not
+not : Bool -> Bool
+```
+
+  The type of not, written Bool $\rightarrow$ Bool and pronounced "Bool arrow
+Bool," can be read, "Given an input of type Bool, this function produces an
+output of type Bool." Similarly, the type of and, written Bool $\rightarrow$
+Bool $\rightarrow$ Bool, can be read, "Given two inputs, both of type bool, this
+function produces an output of type bool."
+
+=== Compound Types
+
+  The types we have defined so far are examples of "enumerated types": their
+definitions explicitly enumerate a finite set of elements, each of which is just
+a bare constructor. Here is a more interesting type definition, where one of the
+constructors takes an argument:
+
+> data RGB = Red | Green | Blue
+
+> data Color = Black
+>            | White
+>            | Primary RGB
+
+  Let's look at this in a little more detail.
+
+  Every inductively defined type (`Day`, `Bool`, `RGB`, `Color`, etc.) contains
+a set of _constructor expressions_ built from _constructors_ like `Red`,
+`Primary`, `True`, `False`, `Monday`, etc. The definitions of `RGB` and `Color`
+say how expressions in the sets `RGB` and `Color` can be built:
+
+  - `Red`, `Green`, and `Blue` are the constructors of `RGB`;
+  - `Black`, `White`, and `Primary` are the constructors of `Color`;
+  - The expression `Red` belongs to the set `RGB`, as do the expressions `Green`
+    and `Blue`;
+  - The expressions `Black` and `White` belong to the set `Color`;
+  - If `p` is an expression belonging to the set `RGB`, then `Primary p`
+    (pronounced "the constructor Primary applied to the argument p") is an
+    expression belonging to the set `Color`;
+  - And expressions formed in these ways are the only ones belonging to the sets
+    `RGB` and `Color`.
+
+  We can define functions on colors using pattern matching just as we have done
+for day and bool.
+
+> isMonochrome : Color -> Bool
+> isMonochrome c = case c of
+>                      Black => True
+>                      White => True
+>                      Primary p => False
+
+  Since the `Primary` constructor takes an argument, a pattern matching `Primary`
+should include either a variable (as above) or a constant of appropriate type
+(as below).
+
+> isRed : Color -> Bool
+> isRed c = case c of
+>               Black => False
+>               White => False
+>               Primary Red => True
+>               Primary _   => False
+
+  The pattern `Primary _` here is shorthand for "primary applied to any rgb
+constructor except red." (The wildcard pattern `_` has the same effect as the
+dummy pattern variable `p` in the definition of monochrome.)
 
 
 
