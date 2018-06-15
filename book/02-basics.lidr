@@ -1,5 +1,7 @@
 = Functional Programming in Idris
 
+> module Basics
+
 == Introduction
 
   The functional programming style is founded on simple, everyday mathematical
@@ -385,6 +387,18 @@ constructors `Z` and `S`. Idris prints numbers in arabic form by default:
 ```idris
 ...> minusTwo 4
 2 : Nat
+```
+
+  The constructor `S` has the type `Nat` $\rightarrow$ `Nat`, just like `pred`
+and functions like minustwo:
+
+```idris
+...> :t S
+S : Nat -> Nat
+...> :t pred
+pred : Nat -> Nat
+...> :t minusTwo
+minusTwo : Nat -> Nat
 ```
 
   <!---            -->
