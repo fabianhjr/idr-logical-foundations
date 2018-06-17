@@ -12,7 +12,7 @@ al. It might also use Software Foundations in Idris (2016) as a reference.
 # Building
 
   Just `make` and it will typecheck and create a PDF file from the sources in
-`book/`. You can safely ignore the `aux/` directory.
+`book/`.
 
 # Solving Exercies
 
