@@ -522,6 +522,13 @@ n is, a fact that can be read directly off the definition of plus.
 >     plus_0_n : 0 + n = n
 >     plus_0_n = Refl
 
+  Moreover, it will be useful later to know that reflexivity does somewhat more
+simplification --- for example, it tries "unfolding" defined terms, replacing
+them with their right-hand sides. The reason for this is that, if reflexivity
+succeeds, the whole goal is finished and we don't need to look at whatever
+expanded expressions reflexivity has created by all this simplification and
+unfolding.
+
   The form of the theorem we just stated and its proof are almost exactly the
 same as the simpler examples we saw earlier; there are just a few differences.
 
