@@ -63,8 +63,8 @@ of the definition can be read "Monday is a day, Tuesday is a day, etc."
 >                     Tuesday   => Wednesday
 >                     Wednesday => Thursday
 >                     Thursday  => Friday
->                     Friday    => Saturday
->                     Saturday  => Sunday
+>                     Friday    => Monday
+>                     Saturday  => Monday
 >                     Sunday    => Monday
 
   One thing to note is that the argument and return types of this function are
@@ -85,7 +85,7 @@ Tuesday : Day
   Second, we can record what we _expect_ the result to be in the form of a
 Type equality:
 
-> test_next_weekday : (nextWeekday (nextWeekday Sunday)) = Tuesday
+> test_next_weekday : (nextWeekday (nextWeekday Saturday)) = Tuesday
 
   This declaration does two things: it makes an assertion (that the second
 weekday after sunday is tuesday), and it gives the assertion a name that can be
@@ -190,7 +190,9 @@ provide us with information about what terms could be put in its place. (Any
 term that have the same type) There is also an interactive assistant that can
 help us replace type holes for normal terms.
 
-==== Exercise: 1 star (nand)
+==== Exercise:
+
+  1 star (`nand`)
 
   Remove the type holes and complete the definition of the following function;
 then make sure that the assertions below can each be verified by Idris. (Remove
@@ -210,7 +212,9 @@ inputs are False.
 > test_nand4 : (nand True  True)  = False
 > test_nand4 = ?nand4
 
-==== Exercise: 1 star (and3)
+==== Exercise:
+
+  1 star (`and3`)
 
   Do the same for the and3 function below. This function should return true when
 all of its inputs are true, and false otherwise.
@@ -483,7 +487,9 @@ on the right-hand side. This avoids the need to invent a variable name.
 > exp base Z     = S Z
 > exp base (S p) = mult base (exp base p)
 
-==== Exercise: 1 star (factorial)
+==== Exercise:
+
+  1 star (`factorial`)
 
   Recall the standard mathematical factorial function:
 
@@ -575,7 +581,9 @@ with the left hand side we could us `rewrite sym eq in Refl`) We can also use
 the rewrite tactic with a previously proved theorem instead of a hypothesis from
 the context.
 
-==== Exercise: 1 star (plus_id_exercise)
+==== Exercise:
+
+  1 star (`plus_id_exercise`)
 
   Remove the type hole and fill in the proof.
 
@@ -592,7 +600,9 @@ can go back and fill in the proofs we skipped. Be careful, though: every time
 you use type holes you are leaving a door open for total nonsense to enter
 Idris's nice, rigorous, formally checked world!
 
-==== Exercise: 2 stars (mult_S_1)
+==== Exercise:
+
+  2 stars (`mult_S_1`)
 
 > parameters (n, m: Nat)
 >     mult_S_1 : m = S n -> m * (1 + n) = m * m
@@ -649,12 +659,16 @@ obligations. For example:
 > and_commutative False True  = Refl
 > and_commutative False False = Refl
 
-==== Exercise: 2 stars (andb_true_elim1)
+==== Exercise:
+
+  2 stars (`andb_true_elim1`)
 
 > and_true_elim1 : (a, b: Bool) -> a && b = True -> a = True
 > and_true_elim1 = ?and_true_elim1_proof
 
-==== Exercise: 1 star (0_neq_plus_1)
+==== Exercise:
+
+  1 star (`Z_neq_plus_1`)
 
 > z_neq_plus_1 : (n: Nat) -> Not (0 = n + 1)
 > z_neq_plus_1 = ?z_neq_plus_1_proof
@@ -683,7 +697,9 @@ later, e.g., in the Lists chapter.
 
 == More Exercises
 
-==== Exercise: 2 stars (boolean_functions)
+==== Exercise:
+
+  2 stars (`boolean_functions`)
 
 > parameters (f : Bool -> Bool, x: Bool)
 >     identity_applied_twice : f x = x -> f (f x) = x
@@ -695,12 +711,16 @@ one but where the hypothesis says that the function `f` has the property that
 
 > -- Code Here
 
-==== Exercise: 3 stars, optional
+==== Exercise:
+
+  3 stars, optional (`and_eq_or`)
 
 > and_eq_or : (a, b: Bool) -> a && b = a || b -> a = b
 > and_eq_or = ?and_eq_or_proof
 
-==== Exercise: 3 stars (binary)
+==== Exercise:
+
+  3 stars (`binary`)
 
   Consider a different, more efficient representation of natural numbers using
 a binary rather than unary system. That is, instead of saying that each natural
@@ -723,7 +743,7 @@ increment and binary-to-unary functions. (A "unit test" in Idris is a specific
 type that can be proved with just reflexivity, as we've done for several of our
 definitions.) Notice that incrementing a binary number and then converting it to
 unary should yield the same result as first converting it to unary and then
-incrementing. (Optional, prove this last statement)
+incrementing.
 
 > -- Code Here
 

@@ -1,5 +1,7 @@
 = Proof by Induction
 
+== Proof by Induction
+
   We proved in the last chapter that `Z` is a neutral element for `+` on the
 left, using an easy argument based on simplification. We should observe that
 proving the fact that it is also a neutral element on the right...
@@ -42,20 +44,22 @@ how this works for the theorem at hand:
 
 > plus_n_0 : (n: Nat) -> n + 0 = n
 > plus_n_0  Z    = Refl
-> plus_n_0 (S n) = let inductiveHipothesis = plus_n_0 n in
->                  rewrite inductiveHipothesis in Refl
+> plus_n_0 (S n) = let inductiveHypothesis = plus_n_0 n in
+>                  rewrite inductiveHypothesis in Refl
 
   In the second subgoal we destructure `S n`, and add the assumption `n + 0 = n`
-to the context with the name inductiveHipothesis. The goal in this case becomes
+to the context with the name inductiveHypothesis. The goal in this case becomes
 `S n = (S n) + 0`, which simplifies to S n = S (n + 0), which in turn follows
-from rewritting the inductiveHipothesis (`n + 0 = n`).
+from rewritting the inductiveHypothesis (`n + 0 = n`).
 
 > minus_diag : (n: Nat) -> minus n n = 0
 > minus_diag  Z    = Refl
-> minus_diag (S n) = let inductiveHipothesis = minus_diag n in
->                    rewrite inductiveHipothesis in Refl
+> minus_diag (S n) = let inductiveHypothesis = minus_diag n in
+>                    rewrite inductiveHypothesis in Refl
 
-==== Exercise: 2 stars, recommended (basic_induction)
+==== Exercise:
+
+  2 stars, recommended (`basic_induction`)
 
   Prove the following using induction. You might need previously proven results:
 
@@ -71,7 +75,9 @@ from rewritting the inductiveHipothesis (`n + 0 = n`).
 > plus_assoc : (n, m, p: Nat) -> n + (m + p) = (n + m) + p
 > plus_assoc = ?plus_assoc_proof
 
-==== Exercise: 2 stars (double_plus)
+==== Exercise:
+
+  2 stars (`double_plus`)
 
   Consider the following function, which doubles its argument:
 
@@ -84,7 +90,9 @@ from rewritting the inductiveHipothesis (`n + 0 = n`).
 > double_plus : (n: Nat) -> double n = n + n
 > double_plus = ?double_plus_proof
 
-==== Exercise: 2 stars, optional (evenb_S)
+==== Exercise:
+
+  2 stars, optional (`even_S`)
 
   Recall our definition of `even n`:
 
@@ -101,3 +109,169 @@ induction:
 
 > even_S : (n: Nat) -> even (S n) = not (even n)
 > even_S = ?even_S_proof
+
+==== Exercise:
+
+  1 star (`destruct_induction`)
+
+  Briefly explain the difference between destructuring and induction.
+
+== Proofs Within Proofs
+
+  In Idris, as in informal mathematics, large proofs are often broken into a
+sequence of theorems, with later proofs referring to earlier theorems. But
+sometimes a proof will require some miscellaneous fact that is too trivial and
+of too little general interest to bother giving it its own top-level name. In
+such cases, it is convenient to be able to simply state and prove the needed
+"sub-theorem" right at the point where it is used.
+
+> parameters (n, m: Nat)
+>     mult_plus_0 : (n + 0) * m = n * m
+>     mult_plus_0 = let aux_lemma = plus_n_0 n in
+>                   rewrite aux_lemma in Refl
+
+  For example, suppose we want to prove that `(n + m) + (p + q) = (m + n) +
+(p + q)`. The only difference between the two sides of the `=` is that the
+arguments `m` and `n` to the first inner `+` are swapped, so it seems we should
+be able to use the commutativity of addition (`plus_comm`) to rewrite one into
+the other. However, the `rewrite` tactic is not very smart about where it
+applies the rewrite. There are three uses of `+` here. To use `plus_comm` at the
+point where we need it, we can introduce a local lemma stating that `n + m =
+m + n` (for the particular `m` and `n` that we are talking about here), prove
+this lemma using `plus_comm`, and then use it to do the desired rewrite.
+
+> parameters (n, m, p, q: Nat)
+>     plus_rearrange : (n + m) + (p + q) = (m + n) + (p + q)
+>     plus_rearrange = let aux_lemma = plus_comm n m in
+>                      rewrite aux_lemma in Refl
+
+== Formal vs. Informal Proof
+
+ > Informal proofs are algorithms; formal proofs are code.
+
+  What constitutes a successful proof of a mathematical claim? The question has
+challenged philosophers for millennia, but a rough and ready definition could be
+this: A proof of a mathematical proposition `P` is a written (or spoken) text
+that instills in the reader or hearer the certainty that `P` is true --- an
+unassailable argument for the truth of P. That is, a proof is an act of
+communication.
+
+  Acts of communication may involve different sorts of readers. On one hand, the
+"reader" can be a program like Idris, in which case the "belief" that is
+instilled is that `P` can be mechanically derived from a certain set of formal
+logical rules, and the proof is a recipe that guides the program in checking
+this fact. Such recipes are _formal proofs_.
+
+  Alternatively, the reader can be a human being, in which case the proof will
+be written in English or some other natural language, and will thus necessarily
+be _informal_. Here, the criteria for success are less clearly specified. A
+"valid" proof is one that makes the reader believe `P`. But the same proof may
+be read by many different readers, some of whom may be convinced by a particular
+way of phrasing the argument, while others may not be. Some readers may be
+particularly pedantic, inexperienced, or just plain thick-headed; the only way
+to convince them will be to make the argument in painstaking detail. But other
+readers, more familiar in the area, may find all this detail so overwhelming
+that they lose the overall thread; all they want is to be told the main ideas,
+since it is easier for them to fill in the details for themselves than to wade
+through a written presentation of them. Ultimately, there is no universal
+standard, because there is no single way of writing an informal proof that is
+guaranteed to convince every conceivable reader.
+
+  In practice, however, mathematicians have developed a rich set of conventions
+and idioms for writing about complex mathematical objects that --- at least
+within a certain community --- make communication fairly reliable. The
+conventions of this stylized form of communication give a fairly clear standard
+for judging proofs good or bad.
+
+  Because we are using Idris in this course, we will be working heavily with
+formal proofs. But this doesn't mean we can completely forget about informal
+ones! Formal proofs are useful in many ways, but they are _not_ very efficient
+ways of communicating ideas between human beings.
+
+  For example, here is a proof that addition is associative:
+
+> plus_assoc' : (n, m, p: Nat) -> n + (m + p) = (n + m) + p
+> plus_assoc' Z     _ _ = Refl
+> plus_assoc' (S n) m p = let indH = plus_assoc' n m p in
+>                         rewrite indH in Refl
+
+  Idris is perfectly happy with this. For a human, however, it is difficult to
+make much sense of it. We can use comments and bullets to show the structure a
+little more clearly...
+
+> plus_assoc'' : (n, m, p: Nat) -> n + (m + p) = (n + m) + p
+> plus_assoc'' Z     _ _ =
+>     -- If n=0 then 0 + (m + p) = m + p and (0 + m) + p = (m) + p
+>     Refl
+> plus_assoc'' (S n) m p =
+>     -- If n = S n' then use induction with the hypothesis that the previous
+>     -- case is true.
+>     let indH = plus_assoc'' n m p in
+>     rewrite indH in Refl
+
+  ...and if you're used to Idris you may be able to step through the tactics one
+after the other in your mind and imagine the state of the context and goal stack
+at each point, but if the proof were even a little bit more complicated this
+would be next to impossible.
+
+  A (pedantic) mathematician might write the proof something like this:
+
+  **Theorem**: For any $n$, $m$ and $p$ natural numbers, $n + (m + p) = (n + m)
+  + p$
+
+  **Proof**: By induction on $n$
+
+  - First, suppose $n = 0$. We must show:
+
+    $$0 + (m + p) = (0 + m) + p$$
+
+    This follows directly from the definition of $+$.
+
+  - Next, suppose $n = S n'$, where
+
+    $$n' + (m + p) = (n' + m) + p$$
+
+    - We must show
+
+      $$(S n') + (m + p) = ((S n') + m) + p$$
+
+    - By the definition of $+$, this follows from
+
+      $$S (n' + (m + p)) = S ((n' + m) + p)$$
+
+      which is immediate from the induction hypothesis.
+
+  $\Box$
+
+  The overall form of the proof is basically similar, and of course this is no
+accident: Idris proofs are structured the same way a mathematician would write.
+But there are significant differences of detail: the formal proof is much more
+explicit in some ways (e.g., the use of reflexivity) but much less explicit in
+others (in particular, the "proof state" at any given point in the Idris proof
+is completely implicit, whereas the informal proof reminds the reader several
+times where things stand).
+
+==== Exercise:
+
+  2 stars, advanced, recommended (`plus_comm_informal`)
+
+  Translate your solution for plus_comm into an informal proof:
+
+  **Theorem**: Addition is commutative.
+
+  **Proof**: _add your proof here_
+
+  $\Box$
+
+==== Exercise:
+
+  2 stars, optional (`eq_nat_refl_informal`)
+
+  Write an informal proof of the following theorem, using the informal proof of
+`plus_assoc` as a model. Don't just paraphrase the Idris code into English!
+
+  **Theorem**: For any $n$, $n=n$
+
+  **Proof**: _add your proof here_
+
+  $\Box$
