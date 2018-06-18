@@ -191,8 +191,6 @@ term that have the same type) There is also an interactive assistant that can
 help us replace type holes for normal terms. (Which has integrations for common
 editors)
 
-=== Exercises
-
 ==== Exercise: 1 star (nand)
 
   Remove the type holes and complete the definition of the following function;
@@ -201,7 +199,7 @@ the type holes and fill in each proof, following the model of the `or`
 assertions above.) The function should return True if either or both of its
 inputs are False.
 
-> nand : Bool -> Bool -> Bool
+> nand : Bool' -> Bool' -> Bool'
 > nand b1 b2 = ?nand_def
 
 > test_nand1 : (nand True  False) = True
@@ -218,7 +216,7 @@ inputs are False.
   Do the same for the and3 function below. This function should return true when
 all of its inputs are true, and false otherwise.
 
-> and3 : Bool -> Bool -> Bool -> Bool
+> and3 : Bool' -> Bool' -> Bool' -> Bool'
 > and3 = ?and3_def
 
 > test_and3_1 : (and3 True  True  True)  = True
@@ -481,17 +479,15 @@ argument destruting is the same as writing some variable that doesn't get used
 on the right-hand side. This avoids the need to invent a variable name.
 
 > exp : Nat -> Nat -> Nat
-> exp base power = case power of
->                      Z => (S Z)
->                      (S p) => mult base (exp base p)
+> exp base Z     = S Z
+> exp base (S p) = mult base (exp base p)
 
-=== Exercises
-
-==== 1 star (factorial)
+==== Exercise: 1 star (factorial)
 
   Recall the standard mathematical factorial function:
 
  > `factorial(0) = 1`
+
  > `factorial(n) = n * factorial(n-1) (if n>0)`
 
   Translate this into Idris.
@@ -503,6 +499,158 @@ on the right-hand side. This avoids the need to invent a variable name.
 > test_factorial1 = ?factorial_1
 > test_factorial2 : factorial 5 = mult 10 12
 > test_factorial2 = ?factorial_2
+
+== Proof by Simplification
+
+  Now that we've defined a few datatypes and functions, let's turn to stating
+and proving properties of their behavior. Actually, we've already started doing
+this: each _test_ in the previous sections makes a precise claim about the
+behavior of some function on some particular inputs. The proofs of these claims
+were always the same: use `Reflexivity` to check that both sides contain
+identical values.
+
+  The same sort of "proof by reflexivity" can be used to prove more interesting
+properties as well. For example, the fact that 0 is a "neutral element" for + on
+the left can be proved just by observing that 0 + n reduces to n no matter what
+n is, a fact that can be read directly off the definition of plus.
+
+  <!--- TODO: Explain Parameterized Blocks -->
+  <!--- http://docs.idris-lang.org/en/latest/tutorial/modules.html#parameterised-blocks -->
+
+> parameters (n: Nat)
+>     plus_0_n : 0 + n = n
+>     plus_0_n = Refl
+
+  The form of the theorem we just stated and its proof are almost exactly the
+same as the simpler examples we saw earlier; there are just a few differences.
+
+  We've added the parameter `n: Nat`, so that our theorem talks about all
+natural numbers `n`. Informally, to prove theorems of this form, we generally
+start by saying "Suppose n is some number..." Formally, this is achieved in the
+proof by taking an argument of the appropriate type, which makes `n` any
+arbitrary `Nat`.
+
+  Other similar theorems can be proved with the same pattern.
+
+> parameters (n: Nat)
+>     plus_1_left : 1 + n = S n
+>     plus_1_left = Refl
+>     mult_0_left : 0 * n = 0
+>     mult_0_left = Refl
+
+== Proof by Rewriting
+
+  This theorem is a bit more interesting than the others we've seen:
+
+> parameters (n, m: Nat)
+>     plus_id_example : n = m -> n + n = m + m
+
+  Instead of making a universal claim about all numbers `n` and `m`, it talks
+about a more specialized property that only holds when `n = m`. The arrow symbol
+is pronounced "implies."
+
+  As before, we need to be able to reason by assuming we are given such numbers
+`n` and `m`. We also need to assume that we are given the equality `n = m`.
+Since `n` and `m` are arbitrary numbers, we can't just use reflexivity to prove
+this theorem. Instead, we prove it by observing that, if we are assuming
+`n = m`, then we can replace `n` with `m` in the goal type and obtain an
+equality with the same expression on both sides. The tactic that tells Idris to
+perform this replacement is called `rewrite`.
+
+>     plus_id_example eq = rewrite eq in Refl
+
+  The eq parameter moves the hypothesis `n = m` into the context. The
+`rewrite eq in Refl` statement tells Idris to rewrite the current goal
+`(n + n = m + m)` by replacing any occurance the left side of the equality
+`n = m` with the right side. (To replace the right hand side of the equality
+with the left hand side we could us `rewrite sym eq in Refl`) We can also use
+the rewrite tactic with a previously proved theorem instead of a hypothesis from
+the context.
+
+==== Exercise: 1 star (plus_id_exercise)
+
+  Remove the type hole and fill in the proof.
+
+> parameters (n, m, o: Nat)
+>     plus_id_exercise : n = m -> m = o -> n + m = m + o
+>     plus_id_exercise = ?plus_id_exercise_proof
+
+  The type hole tells Idris that we want to skip trying to prove this theorem
+and just accept it as a given. This can be useful for developing longer proofs,
+since we can state subsidiary lemmas that we believe will be useful for making
+some larger argument, use type holes to accept them on faith for the moment, and
+continue working on the main argument until we are sure it makes sense; then we
+can go back and fill in the proofs we skipped. Be careful, though: every time
+you use type holes you are leaving a door open for total nonsense to enter
+Idris's nice, rigorous, formally checked world!
+
+==== Exercise: 2 stars (mult_S_1)
+
+> parameters (n, m: Nat)
+>     mult_S_1 : m = S n -> m * (1 + n) = m * m
+>     mult_S_1 = ?mult_S_1_def
+
+== Proof by Case Analysis
+
+  Of course, not everything can be proved by simple calculation and rewriting:
+In general, unknown, hypothetical values (arbitrary numbers, booleans, lists,
+etc.) can block simplification. For example, if we try to prove the following
+fact using the absurd tactic, we get an error.
+
+> parameters (n: Nat)
+>     plus_1_neq_0_firsttry : Not (n + 1 = 0)
+>     plus_1_neq_0_firsttry = ?absurd -- absurd will error
+
+  The reason for this is that the definitions of `+` begins by performing a
+match on its arguments. But here, the first argument to `+` is the unknown
+number `n` and the argument to Not is the compound expression `n + 1 = 0`;
+neither can be simplified.
+
+  To make progress, we need to consider the possible forms of `n` separately. If
+`n` is `Z`, then we can calculate the final result of `Not (n + 1 = 0)` and
+check that it is, indeed, false. And if `n = S n'` for some `n'`, then, although
+we don't know exactly what number `n + 1` yields, we can calculate that, at
+least, it will begin with one `S`, and this is enough to calculate that, again,
+Not (n + 1 = 0) will be false.
+
+> plus_1_neq_0 : (n: Nat) -> Not (n + 1 = 0)
+> plus_1_neq_0 Z     = absurd -- 1 /= 0
+> plus_1_neq_0 (S n) = absurd -- Unfolding
+
+  Destructuring generates two subgoals, which we must then prove, separately, in
+order to get Idris to accept the theorem. In this example, each of the subgoals
+is easily proved by a single use of absurd, which itself performs some
+simplification --- e.g., the second one simplifies `Not (S n' + 1 = 0)` to
+absurd by first rewriting `(S n' + 1)` to `S (n' + 1)`, then unfolding the
+equality, and finaly simplifying the match.
+
+  Destructuring can be used with any inductively defined datatype. For example,
+we use it next to prove that boolean negation is involutive --- i.e., that
+negation is its own inverse.
+
+> not_involutive : (b: Bool) -> not (not b) = b
+> not_involutive True  = Refl
+> not_involutive False = Refl
+
+  It is sometimes useful to destruct more arguments, generating yet more proof
+obligations. For example:
+
+> and_commutative : (a, b: Bool) -> a && b = b && a
+> and_commutative True  True  = Refl
+> and_commutative True  False = Refl
+> and_commutative False True  = Refl
+> and_commutative False False = Refl
+
+==== Exercise: 2 stars (andb_true_elim1)
+
+> and_true_elim1 : (a, b: Bool) -> a && b = True -> a = True
+> and_true_elim1 = ?and_true_elim1_proof
+
+==== Exercise: 1 star (0_neq_plus_1)
+
+> z_neq_plus_1 : (n: Nat) -> Not (0 = n + 1)
+> z_neq_plus_1 = ?z_neq_plus_1_proof
+
 
   <!---            -->
   <!--- References -->
