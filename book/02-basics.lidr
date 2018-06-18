@@ -59,13 +59,13 @@ of the definition can be read "Monday is a day, Tuesday is a day, etc."
 
 > nextWeekday : Day -> Day
 > nextWeekday d = case d of
->                      Monday    => Tuesday
->                      Tuesday   => Wednesday
->                      Wednesday => Thursday
->                      Thursday  => Friday
->                      Friday    => Saturday
->                      Saturday  => Sunday
->                      Sunday    => Monday
+>                     Monday    => Tuesday
+>                     Tuesday   => Wednesday
+>                     Wednesday => Thursday
+>                     Thursday  => Friday
+>                     Friday    => Saturday
+>                     Saturday  => Sunday
+>                     Sunday    => Monday
 
   One thing to note is that the argument and return types of this function are
 explicitly declared. Like most functional programming languages, Idris can often
@@ -123,44 +123,44 @@ be careful to follow these rules:
   In a similar way, we can define the standard type bool of booleans, with
 members `True` and `False`.
 
-> data Bool' = True | False
+> data Boolean = True | False
 
   Although we are rolling our own booleans here for the sake of building up
 everything from scratch, Idris does, of course, provide a default implementation
 of the booleans, together with a multitude of useful functions and lemmas. (Take
-a look at [Prelude.Bool]) in the [Idris library documentation] if you are
-interested) Whenever possible, we'll name our own definitions and theorems so
-that they exactly coincide with the ones in the standard library.
+a look at [Prelude.Bool]) in the [Idris library documentation]) We will use
+similar naming conventions to those in the Idris Library but use different names
+to avoid ambigous references between our implementation and Idris's.
 
   Functions over booleans can be defined in the same way as above:
 
-> not' : Bool' -> Bool'
-> not' b = case b of
->              False => True
->              True  => False
+> neg : Boolean -> Boolean
+> neg b = case b of
+>             False => True
+>             True  => False
 
-> and' : Bool' -> Bool' -> Bool'
-> and' b1 b2 = case b1 of
->                  False => False
->                  True  => b2
+> and : Boolean -> Boolean -> Boolean
+> and b1 b2 = case b1 of
+>                 False => False
+>                 True  => b2
 
-> or' : Bool' -> Bool' -> Bool'
-> or' b1 b2 = case b1 of
->                 False => b2
->                 True  => True
+> or : Boolean -> Boolean -> Boolean
+> or b1 b2 = case b1 of
+>                False => b2
+>                True  => True
 
   The last two of these illustrate Idris's syntax for multi-argument function
 definitions. The corresponding multi-argument application syntax is illustrated
 by the following "unit tests," which constitute a complete specification --- a
 truth table --- for the `or` function:
 
-> test_or1 : (or' True  False) = True
+> test_or1 : (or True  False) = True
 > test_or1 = Refl
-> test_or2 : (or' False False) = False
+> test_or2 : (or False False) = False
 > test_or2 = Refl
-> test_or3 : (or' False True)  = True
+> test_or3 : (or False True)  = True
 > test_or3 = Refl
-> test_or4 : (or' True  True)  = True
+> test_or4 : (or True  True)  = True
 > test_or4 = Refl
 
   We can also introduce some familiar syntax for the boolean operations we have
@@ -170,10 +170,10 @@ declared as right associative and with a presedence level of 4.
 
 > infixr 4 \/, /\
 
-> (\/) : Bool' -> Bool' -> Bool'
-> (\/) = or'
-> (/\) : Bool' -> Bool' -> Bool'
-> (/\) = and'
+> (\/) : Boolean -> Boolean -> Boolean
+> (\/) = or
+> (/\) : Boolean -> Boolean -> Boolean
+> (/\) = and
 
 > test_or5 : False \/ False \/ True = True
 > test_or5 = Refl
@@ -188,8 +188,7 @@ hole we will get the type back and **not** its evaluation.
   The importance of type holes is that they allow a program to typecheck and
 provide us with information about what terms could be put in its place. (Any
 term that have the same type) There is also an interactive assistant that can
-help us replace type holes for normal terms. (Which has integrations for common
-editors)
+help us replace type holes for normal terms.
 
 ==== Exercise: 1 star (nand)
 
@@ -199,7 +198,7 @@ the type holes and fill in each proof, following the model of the `or`
 assertions above.) The function should return True if either or both of its
 inputs are False.
 
-> nand : Bool' -> Bool' -> Bool'
+> nand : Boolean -> Boolean -> Boolean
 > nand b1 b2 = ?nand_def
 
 > test_nand1 : (nand True  False) = True
@@ -216,7 +215,7 @@ inputs are False.
   Do the same for the and3 function below. This function should return true when
 all of its inputs are true, and false otherwise.
 
-> and3 : Bool' -> Bool' -> Bool' -> Bool'
+> and3 : Boolean -> Boolean -> Boolean -> Boolean
 > and3 = ?and3_def
 
 > test_and3_1 : (and3 True  True  True)  = True
@@ -235,24 +234,26 @@ computes. The `:t` command asks Idris to print the type of an expression.
 
 ```idris
 ...> :t True
-True : Bool
-...> :t not True
-not True : Bool
+Prelude.Bool.True : Bool
+Main.True : Boolean
+...> :t neg True
+neg True : Boolean
 ```
 
-  Functions like `not` itself are also data values, just like True and False.
+  Functions like `neg` itself are also data values, just like True and False.
 Their types are called function types, and they are written with arrows.
 
 ```idris
-...> :t not
-not : Bool -> Bool
+...> neg
+neg : Boolean -> Boolean
 ```
 
-  The type of not, written Bool $\rightarrow$ Bool and pronounced "Bool arrow
-Bool," can be read, "Given an input of type Bool, this function produces an
-output of type Bool." Similarly, the type of and, written Bool $\rightarrow$
-Bool $\rightarrow$ Bool, can be read, "Given two inputs, both of type bool, this
-function produces an output of type bool."
+  The type of `neg`, written `Boolean` $\rightarrow$ `Boolean` and pronounced
+"Boolean arrow Boolean," can be read, "Given an input of type Boolean, this
+function produces an output of type Boolean." Similarly, the type of and,
+written `Boolean` $\rightarrow$ `Boolean` $\rightarrow$ `Boolean`, can be read,
+"Given two inputs, both of type Boolean, this function produces an output of
+type Boolean."
 
 === Compound Types
 
@@ -338,7 +339,7 @@ how expressions in the set nat can be built:
   - And expressions formed in these two ways are the only ones belonging to the
     set `Nat`.
 
-  The same rules apply for our definitions of `Day`, `Bool'`, `Color`, etc.
+  The same rules apply for our definitions of `Day`, `Boolean`, `Color`, etc.
 
   The above conditions are the precise force of the _Inductive Types_. They
 imply that the expression `Zero`, the expression `S Zero`, the expression
@@ -651,6 +652,73 @@ obligations. For example:
 > z_neq_plus_1 : (n: Nat) -> Not (0 = n + 1)
 > z_neq_plus_1 = ?z_neq_plus_1_proof
 
+=== More on Notation (Optional)
+
+  (In general, sections marked Optional are not needed to follow the rest of the
+book, except possibly other Optional sections. On a first reading, you might
+want to skim these sections so that you know what's there for future reference.)
+
+Recall the infix declarations for plus and times:
+
+```idris
+infixl 5 +
+infixl 4 *
+```
+
+  For each symbol in Idris, we must specify its _precedence level_ and its
+_associativity_. The precedence level `n` is specified by writing `n`; this
+helps Idris parse compound expressions. The associativity setting helps to
+disambiguate expressions containing multiple occurrences of the same symbol. For
+example, the parameters specified above for `+` and `*` say that the expression
+`1+2*3*4` is shorthand for `(1+((2*3)*4))`. Idris uses precedence levels from
+0 to 10, and left or right associativity. We will see more examples of this
+later, e.g., in the Lists chapter.
+
+== More Exercises
+
+==== Exercise: 2 stars (boolean_functions)
+
+> parameters (f : Bool -> Bool, x: Bool)
+>     identity_applied_twice : f x = x -> f (f x) = x
+>     identity_applied_twice = ?identity_applied_twice_proof
+
+  Now state and prove a theorem `negation_applied_twice` similar to the previous
+one but where the hypothesis says that the function `f` has the property that
+`f x = not x`.
+
+> -- Code Here
+
+==== Exercise: 3 stars, optional
+
+> and_eq_or : (a, b: Bool) -> a && b = a || b -> a = b
+> and_eq_or = ?and_eq_or_proof
+
+==== Exercise: 3 stars (binary)
+
+  Consider a different, more efficient representation of natural numbers using
+a binary rather than unary system. That is, instead of saying that each natural
+number is either zero or the successor of a natural number, we can say that each
+binary number is either:
+
+  - Zero,
+  - Twice a binary number
+  - Or, one more than twice a binary number.
+
+  (a) First, write an inductive definition of the type `Bin` corresponding to
+this description of binary numbers. (Hint: Recall that the definition of `Nat`
+above)
+
+  (b) Next, write an increment function `incr` for binary numbers, and a
+function `binToNat` to convert `Bin` numbers to `Nat` numbers.
+
+  (c) Write five unit tests `test_bin_incr1`, `test_bin_incr2`, etc. for your
+increment and binary-to-unary functions. (A "unit test" in Idris is a specific
+type that can be proved with just reflexivity, as we've done for several of our
+definitions.) Notice that incrementing a binary number and then converting it to
+unary should yield the same result as first converting it to unary and then
+incrementing. (Optional, prove this last statement)
+
+> -- Code Here
 
   <!---            -->
   <!--- References -->
