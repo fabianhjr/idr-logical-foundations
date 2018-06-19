@@ -484,6 +484,12 @@ as follows:
   4. `S (S (S plus Z (S (S Z))))`
   5. `S (S (S (S (S Z))))`
 
+```idris
+mult : Nat -> Nat -> Nat
+mult  Z    _ = Z
+mult (S n) m = plus m (mult n m)
+```
+
   We can also destructure any number of arguments at once:
 
 ```idris
@@ -507,9 +513,13 @@ on the right-hand side. This avoids the need to invent a variable name.
 
   Recall the standard mathematical factorial function:
 
- > $\text{factorial}(0) = 1$
-
- > $\text{factorial}(n) = n * factorial(n-1) (if n>0)$
+$$
+\text{factorial}(n) =
+  \begin{cases}
+    1                              & \text{if} \ n = 0 \\
+    n \times \text{factorial}(n-1) & \text{if} \ n > 0 \\
+  \end{cases}
+$$
 
   Translate this into Idris.
 

@@ -194,7 +194,7 @@ a _Runtime Error_. This also means that when using `head` in a program, we will
 to show the type system that we are not passing an empty list.
 
 ```idris
-...> head Nil
+...> head []
 (input):1:1-6:When checking argument ok to function Main.hd:
         Can't find a value of type
                 NonEmpty []
@@ -210,3 +210,66 @@ tail (_::l) = l
 
 > test_tail : tail [1, 2, 3] = [2, 3]
 > test_tail = Refl
+
+=== Exercises
+
+==== Exercise:
+
+  2 stars, recommended (`list_funs`)
+
+  Complete the definitions of `nonZeros`, `oddMembers` and `countOddMembers`
+below. Have a look at the tests to understand what these functions should do.
+
+\ignore {
+
+> -- This is a gift function
+> odd : Nat -> Bool
+> odd  Z    = False
+> odd (S n) = not (odd n)
+
+}
+
+> nonZeros : List Nat -> List Nat
+> nonZeros = ?nonZeros_def
+
+> test_nonZeros : nonZeros [0, 1, 0, 2, 3, 0, 0] = [1, 2, 3]
+> test_nonZeros = ?nonZeros1
+
+> oddMembers : List Nat -> List Nat
+> oddMembers = ?oddMembers_def
+
+> test_oddMembers : oddMembers [0, 1, 0, 2, 3, 0, 0] = [1, 3]
+> test_oddMembers = ?oddMembers1
+
+> countOddMembers : List Nat -> Nat
+> countOddMembers = ?countOddMembers_def
+
+> test_countOddMembers1 : countOddMembers [1, 0, 3, 1, 4, 5] = 4
+> test_countOddMembers1 = ?countOddMembers1
+> test_countOddMembers2 : countOddMembers [0, 2, 4] = 0
+> test_countOddMembers2 = ?countOddMembers2
+> test_countOddMembers3 : countOddMembers [] = 0
+> test_countOddMembers3 = ?countOddMembers3
+
+==== Exercise:
+
+  3 stars, advanced (`alternate`)
+
+  Complete the definition of `alternate`, which "zips up" two lists into one,
+alternating between elements taken from the first list and elements from the
+second. See the tests below for more specific examples.
+
+> alternate : List Nat -> List Nat -> List Nat
+> alternate = ?alternate_def
+
+> test_alternate1 : alternate [1, 2, 3] [4, 5, 6] = [1, 4, 2, 5, 3, 6]
+> test_alternate1 = ?alternate1
+> test_alternate2 : alternate [1] [4, 5, 6] = [1, 4, 5, 6]
+> test_alternate2 = ?alternate2
+> test_alternate3 : alternate [1, 2, 3] [4] = [1, 4, 2, 3]
+> test_alternate3 = ?alternate3
+> test_alternate4 : alternate [] [20, 30] = [20, 30]
+> test_alternate4 = ?alternate4
+
+=== Bags via Lists
+
