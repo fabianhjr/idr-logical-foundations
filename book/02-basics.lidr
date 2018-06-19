@@ -531,6 +531,69 @@ $$
 > test_factorial2 : factorial 5 = mult 10 12
 > test_factorial2 = ?factorial_2
 
+  We can make numerical expressions a little easier to read and write by
+introducing notations for addition, multiplication, and subtraction.
+
+```idris
+infixl 8 +, -
+infixl 9 *
+
+(+) : Nat -> Nat -> Nat
+(+) = plus
+
+(-) : Nat -> Nat -> Nat
+(-) = minus
+
+(*) : Nat -> Nat -> Nat
+(*) = mult
+```
+
+  (The presedence level and associativity control how these notations are
+treated by Idris's parser. The details are not important for our purposes, but
+interested readers can refer to the optional [More on Notation] section at the
+end of this chapter.)
+
+  We now define a function `eq`, which tests natural numbers for equality,
+yielding a boolean, and `leq` function tests whether its first argument is less
+than or equal to its second argument, yielding a boolean.
+
+> eq : Nat -> Nat -> Bool
+> eq  Z     Z    = True
+> eq  Z    (S _) = False
+> eq (S _)  Z    = False
+> eq (S n) (S m) = eq n m
+
+> leq : Nat -> Nat -> Bool
+> leq  Z     Z    = True
+> leq  Z    (S _) = True
+> leq (S _)  Z    = False
+> leq (S n) (S m) = leq n m
+
+> test_leq1 : leq 2 2 = True
+> test_leq1 = Refl
+> test_leq2 : leq 2 4 = True
+> test_leq2 = Refl
+> test_leq3 : leq 4 2 = False
+> test_leq3 = Refl
+
+==== Exercise:
+
+  1 star (`lt'`)
+
+  The `lt'` function tests natural numbers for less-than, yielding a boolean.
+Instead of making up a new definition for this one, define it in terms of a
+previously defined function.
+
+> lt' : Nat -> Nat -> Bool
+> lt' = ?lt_def
+
+> test_lt1 : lt' 2 2 = False
+> test_lt1 = ?lt1
+> test_lt2 : lt' 2 4 = True
+> test_lt2 = ?lt2
+> test_lt3 : lt' 4 2 = False
+> test_lt3 = ?lt3
+
 == Proof by Simplification
 
   Now that we've defined a few datatypes and functions, let's turn to stating
@@ -683,6 +746,40 @@ obligations. For example:
 > and_commutative False True  = Refl
 > and_commutative False False = Refl
 
+> and_associative : (a, b, c: Bool) -> (a && b) && c = a && (b && c)
+> and_associative True  True  True  = Refl
+> and_associative True  True  False = Refl
+> and_associative True  False True  = Refl
+> and_associative True  False False = Refl
+> and_associative False True  True  = Refl
+> and_associative False True  False = Refl
+> and_associative False False True  = Refl
+> and_associative False False False = Refl
+
+However, there is a more interresting way to prove this if we use this last two
+sections together and two useful auxiliary lemmas:
+
+> and_elimTrue : (a: Bool) -> a && True = a
+> and_elimTrue True  = Refl
+> and_elimTrue False = Refl
+
+> and_elimFalse : (a: Bool) -> a && False = False
+> and_elimFalse True  = Refl
+> and_elimFalse False = Refl
+
+> parameters (a, b: Bool)
+>     and_associative' : (c: Bool) -> (a && b) && c = a && (b && c)
+>                              -- Replace (a && b) && True for (a && b)
+>     and_associative' True  = rewrite and_elimTrue (a && b) in
+>                              -- Replace b && True for b
+>                              rewrite and_elimTrue b in Refl
+>                              -- Replace (a && b) && False for False
+>     and_associative' False = rewrite and_elimFalse (a && b) in
+>                              -- Replace b && False for False
+>                              rewrite and_elimFalse b in
+>                              -- Replace a && False for False
+>                              rewrite and_elimFalse a in Refl
+
 ==== Exercise:
 
   2 stars (`andb_true_elim1`)
@@ -717,7 +814,7 @@ disambiguate expressions containing multiple occurrences of the same symbol. For
 example, the parameters specified above for `+` and `*` say that the expression
 `1+2*3*4` is shorthand for `(1+((2*3)*4))`. Idris uses precedence levels from
 0 to 10, and left or right associativity. We will see more examples of this
-later, e.g., in the Lists chapter.
+later, e.g., in the [Lists chapter].
 
 == More Exercises
 
@@ -774,6 +871,9 @@ incrementing.
   <!---            -->
   <!--- References -->
   <!---            -->
+
+[More on Notation]: #more-on-notation-optional
+[Lists chapter]: #working-with-structured-data
 
 [Prelude.Bool]: https://www.idris-lang.org/docs/current/prelude_doc/docs/Prelude.Bool.html
 [Idris library documentation]: https://www.idris-lang.org/docs/current/base_doc/

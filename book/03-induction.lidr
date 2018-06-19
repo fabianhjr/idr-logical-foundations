@@ -33,29 +33,27 @@ induction over natural numbers: If `P(n)` is some proposition involving a
 natural number `n` and we want to show that `P` holds for all numbers `n`, we
 can reason like this:
 
-  - Show that `P(O)` holds;
-  - Show that, for any `n'`, if `P(n')` holds, then so does `P(S n')`;
+  - Show that `P(Z)` holds;
+  - Show that, for any `n`, if `P(n)` holds, then so does `P(S n)`;
   - Conclude that `P(n)` holds for all `n`.
 
   In Idris, the steps are the same: we begin with the goal of proving `P(n)` for
 all `n` and break it down into two separate subgoals: one where we must show
-`P(Z)` and another where we must show `P(n')` $\rightarrow$ `P(S n')`. Here's
+`P(Z)` and another where we must show `P(n)` $\rightarrow$ `P(S n)`. Here's
 how this works for the theorem at hand:
 
 > plus_n_0 : (n: Nat) -> n + 0 = n
 > plus_n_0  Z    = Refl
-> plus_n_0 (S n) = let inductiveHypothesis = plus_n_0 n in
->                  rewrite inductiveHypothesis in Refl
+> plus_n_0 (S n) = rewrite plus_n_0 n in Refl
 
   In the second subgoal we destructure `S n`, and add the assumption `n + 0 = n`
-to the context with the name inductiveHypothesis. The goal in this case becomes
-`S n = (S n) + 0`, which simplifies to S n = S (n + 0), which in turn follows
-from rewritting the inductiveHypothesis (`n + 0 = n`).
+to the context by rewritting the hypothesis into Refl. The goal in this case
+becomes `S n = (S n) + 0`, which simplifies to S n = S (n + 0), which in turn
+follows from the inductive hypothesis.
 
 > minus_diag : (n: Nat) -> minus n n = 0
 > minus_diag  Z    = Refl
-> minus_diag (S n) = let inductiveHypothesis = minus_diag n in
->                    rewrite inductiveHypothesis in Refl
+> minus_diag (S n) = rewrite minus_diag n in Refl
 
 ==== Exercise:
 
@@ -127,8 +125,7 @@ such cases, it is convenient to be able to simply state and prove the needed
 
 > parameters (n, m: Nat)
 >     mult_plus_0 : (n + 0) * m = n * m
->     mult_plus_0 = let aux_lemma = plus_n_0 n in
->                   rewrite aux_lemma in Refl
+>     mult_plus_0 = rewrite plus_n_0 n in Refl
 
   For example, suppose we want to prove that `(n + m) + (p + q) = (m + n) +
 (p + q)`. The only difference between the two sides of the `=` is that the
@@ -139,6 +136,8 @@ applies the rewrite. There are three uses of `+` here. To use `plus_comm` at the
 point where we need it, we can introduce a local lemma stating that `n + m =
 m + n` (for the particular `m` and `n` that we are talking about here), prove
 this lemma using `plus_comm`, and then use it to do the desired rewrite.
+
+  <!--- TODO: Better example -->
 
 > parameters (n, m, p, q: Nat)
 >     plus_rearrange : (n + m) + (p + q) = (m + n) + (p + q)
@@ -192,8 +191,7 @@ ways of communicating ideas between human beings.
 
 > plus_assoc' : (n, m, p: Nat) -> n + (m + p) = (n + m) + p
 > plus_assoc' Z     _ _ = Refl
-> plus_assoc' (S n) m p = let indH = plus_assoc' n m p in
->                         rewrite indH in Refl
+> plus_assoc' (S n) m p = rewrite plus_assoc' n m p in Refl
 
   Idris is perfectly happy with this. For a human, however, it is difficult to
 make much sense of it. We can use comments and bullets to show the structure a
@@ -204,10 +202,9 @@ little more clearly...
 >     -- If n=0 then 0 + (m + p) = m + p and (0 + m) + p = (m) + p
 >     Refl
 > plus_assoc'' (S n) m p =
->     -- If n = S n' then use induction with the hypothesis that the previous
->     -- case is true.
->     let indH = plus_assoc'' n m p in
->     rewrite indH in Refl
+>     -- If n = S n' then use induction with the hypothesis that the
+>     -- previous case is true.
+>     rewrite plus_assoc'' n m p in Refl
 
   ...and if you're used to Idris you may be able to step through the tactics one
 after the other in your mind and imagine the state of the context and goal stack

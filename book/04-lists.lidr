@@ -273,3 +273,109 @@ second. See the tests below for more specific examples.
 
 === Bags via Lists
 
+  A bag (or multiset) is like a set, except that each element can appear
+multiple times rather than just once. One possible implementation is to
+represent a bag of numbers as a list.
+
+> Bag : Type
+> Bag = List Nat
+
+==== Exercise:
+
+  3 stars, recommended (`bag_functions`)
+
+  Complete the following definitions for the functions `count`, `sum`, `add`,
+and `member` for bags.
+
+> count : Nat -> Bag -> Nat
+> count = ?count_def
+
+> test_count1 : count 1 [1, 2, 3, 1, 4, 1] = 3
+> test_count1 = ?count1
+> test_count2 : count 6 [1, 2, 3, 1, 4, 1] = 0
+> test_count2 = ?count2
+
+  Multiset `sum` is similar to set union: `sum a b` contains all the elements of
+`a` and of `b`. (Mathematicians usually define union on multisets a little bit
+differently --- using max instead of sum --- which is why we don't use that name
+for this operation.) You are encouraged to think about whether `sum` can be
+implemented in another way --- perhaps by using functions that have already been
+defined.
+
+> sum : Bag -> Bag -> Bag
+> sum = ?sum_def
+
+> test_sum1 : count 1 (sum [1, 2, 3] [1, 4, 1]) = 3
+> test_sum1 = ?sum1
+
+
+> add : Nat -> Bag -> Bag
+> add = ?add_def
+
+> test_add1 : count 1 (add 1 [1, 4, 1]) = 3
+> test_add1 = ?add1
+> test_add2 : count 5 (add 1 [1, 4, 1]) = 0
+> test_add2 = ?add2
+
+> member : Nat -> Bag -> Bool
+> member = ?member_def
+
+> test_member1 : member 1 [1, 4, 1] = True
+> test_member1 = ?member1
+> test_member2 : member 2 [1, 4, 1] = False
+> test_member2 = ?member2
+
+==== Exercise:
+
+  3 stars, optional (`bag_more_functions`)
+
+  Here are some more bag functions for you to practice with.
+
+  When `remove_one` is applied to a `Bag` without the number to remove, it
+should return the same `Bag` unchanged.
+
+> remove_one : Nat -> Bag -> Bag
+> remove_one = ?remove_one_def
+
+> test_remove_one1 : count 5 (remove_one 5 [2, 1, 5, 4, 1]) = 0
+> test_remove_one1 = ?remove_one1
+> test_remove_one2 : count 5 (remove_one 5 [2, 1, 4, 1]) = 0
+> test_remove_one2 = ?remove_one2
+> test_remove_one3 : count 4 (remove_one 5 [2, 1, 4, 5, 1, 4]) = 2
+> test_remove_one3 = ?remove_one3
+> test_remove_one4 : count 5 (remove_one 5 [2, 1, 5, 4, 5, 1, 4]) = 0
+> test_remove_one4 = ?remove_one4
+
+> remove_all : Nat -> Bag -> Bag
+> remove_all = ?remove_all_def
+
+> test_remove_all1 : count 5 (remove_all 5 [2, 1, 5, 4, 1]) = 0
+> test_remove_all1 = ?remove_all1
+> test_remove_all2 : count 5 (remove_all 5 [2, 1, 4, 1]) = 0
+> test_remove_all2 = ?remove_all2
+> test_remove_all3 : count 4 (remove_all 5 [2, 1, 4, 5, 1, 4]) = 2
+> test_remove_all3 = ?remove_all3
+> test_remove_all4 : count 5 (remove_all 5 [2,1,5,4,5,1,4,5,1,4]) = 0
+> test_remove_all4 = ?remove_all4
+
+> subset : Bag -> Bag -> Bool
+> subset = ?subset_def
+
+> test_subset1 : subset [1, 2] [2, 1, 4, 1] = True
+> test_subset1 = ?subset1
+> test_subset2 : subset [1, 2, 2] [2, 1, 4, 1] = False
+> test_subset2 = ?subset2
+
+==== Exercise:
+
+  3 stars, recommended (`bag_theorem`)
+
+  Write down an interesting theorem `bag_theorem` about bags involving the
+functions count and add, and prove it. Note that, since this problem is somewhat
+open-ended, it's possible that you may come up with a theorem which is true, but
+whose proof requires techniques you haven't learned yet. Feel free to ask for
+help if you get stuck!
+
+> -- Code here
+
+== Reasoning About Lists
