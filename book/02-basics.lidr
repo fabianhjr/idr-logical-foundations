@@ -132,22 +132,21 @@ a look at [Prelude.Bool]) in the [Idris library documentation]) We will use
 similar naming conventions to those in the Idris Library but use different names
 to avoid ambigous references between our implementation and Idris's.
 
-  Functions over booleans can be defined in the same way as above:
+  Functions over booleans can be defined in the same way as above, however we
+can do cases implicitly over the definition of a function --- use whichever is
+convinient:
 
 > neg : Boolean -> Boolean
-> neg b = case b of
->             False => True
->             True  => False
+> neg True  = False
+> neg False = True
 
 > and : Boolean -> Boolean -> Boolean
-> and b1 b2 = case b1 of
->                 False => False
->                 True  => b2
+> and True  b2 = b2
+> and False _  = False
 
 > or : Boolean -> Boolean -> Boolean
-> or b1 b2 = case b1 of
->                False => b2
->                True  => True
+> or True  _  = True
+> or False b2 = b2
 
   The last two of these illustrate Idris's syntax for multi-argument function
 definitions. The corresponding multi-argument application syntax is illustrated
@@ -201,16 +200,16 @@ assertions above.) The function should return True if either or both of its
 inputs are False.
 
 > nand : Boolean -> Boolean -> Boolean
-> nand b1 b2 = ?nand_def
+> nand = ?nand_def
 
 > test_nand1 : (nand True  False) = True
-> test_nand1 = ?nand1
+> test_nand1 = ?nand_1
 > test_nand2 : (nand False False) = True
-> test_nand2 = ?nand2
+> test_nand2 = ?nand_2
 > test_nand3 : (nand False True)  = True
-> test_nand3 = ?nand3
+> test_nand3 = ?nand_3
 > test_nand4 : (nand True  True)  = False
-> test_nand4 = ?nand4
+> test_nand4 = ?nand_4
 
 ==== Exercise:
 
@@ -248,7 +247,7 @@ neg True : Boolean
 Their types are called function types, and they are written with arrows.
 
 ```idris
-...> neg
+...> :t neg
 neg : Boolean -> Boolean
 ```
 
