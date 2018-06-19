@@ -123,28 +123,33 @@ be careful to follow these rules:
   In a similar way, we can define the standard type bool of booleans, with
 members `True` and `False`.
 
-> data Boolean = True | False
+```idris
+data Bool = True | False
+```
 
-  Although we are rolling our own booleans here for the sake of building up
-everything from scratch, Idris does, of course, provide a default implementation
-of the booleans, together with a multitude of useful functions and lemmas. (Take
-a look at [Prelude.Bool]) in the [Idris library documentation]) We will use
-similar naming conventions to those in the Idris Library but use different names
-to avoid ambigous references between our implementation and Idris's.
+  Although we are putting the definition for Bool here for the sake of building
+up everything from scratch, Idris does, of course, provide a default
+implementation of the booleans, together with a multitude of useful functions
+and lemmas. (The [Prelude.Bool] documentation is available at the [Idris library
+documentation] site) We will use code-blocks (` ``` ` `code` ` ``` `) when using
+the library definition or bird tracks (`> code `) when using our own
+implementation.
 
   Functions over booleans can be defined in the same way as above, however we
 can do cases implicitly over the definition of a function --- use whichever is
 convinient:
 
-> neg : Boolean -> Boolean
-> neg True  = False
-> neg False = True
+```idris
+not : Bool -> Bool
+not True  = False
+not False = True
+```
 
-> and : Boolean -> Boolean -> Boolean
+> and : Bool -> Bool -> Bool
 > and True  b2 = b2
 > and False _  = False
 
-> or : Boolean -> Boolean -> Boolean
+> or : Bool -> Bool -> Bool
 > or True  _  = True
 > or False b2 = b2
 
@@ -165,16 +170,19 @@ truth table --- for the `or` function:
   We can also introduce some familiar syntax for the boolean operations we have
 just defined. Infix operatores need to have a `fixity` declaration that
 specifies the association order and order presedence. This operations will be
-declared as right associative and with a presedence level of 4.
+declared as left associative and with a presedence level of 4 and 5.
 
-> infixr 4 \/, /\
+```idris
+infixl 4 ||
+infixl 5 &&
 
-> (\/) : Boolean -> Boolean -> Boolean
-> (\/) = or
-> (/\) : Boolean -> Boolean -> Boolean
-> (/\) = and
+(||) : Bool -> Bool -> Bool
+(||) = or
+(&&) : Bool -> Bool -> Bool
+(&&) = and
+```
 
-> test_or5 : False \/ False \/ True = True
+> test_or5 : False || False || True = True
 > test_or5 = Refl
 
 === Type Holes
@@ -199,17 +207,17 @@ the type holes and fill in each proof, following the model of the `or`
 assertions above.) The function should return True if either or both of its
 inputs are False.
 
-> nand : Boolean -> Boolean -> Boolean
+> nand : Bool -> Bool -> Bool
 > nand = ?nand_def
 
 > test_nand1 : (nand True  False) = True
-> test_nand1 = ?nand_1
+> test_nand1 = ?nand1
 > test_nand2 : (nand False False) = True
-> test_nand2 = ?nand_2
+> test_nand2 = ?nand2
 > test_nand3 : (nand False True)  = True
-> test_nand3 = ?nand_3
+> test_nand3 = ?nand3
 > test_nand4 : (nand True  True)  = False
-> test_nand4 = ?nand_4
+> test_nand4 = ?nand4
 
 ==== Exercise:
 
@@ -218,7 +226,7 @@ inputs are False.
   Do the same for the and3 function below. This function should return true when
 all of its inputs are true, and false otherwise.
 
-> and3 : Boolean -> Boolean -> Boolean -> Boolean
+> and3 : Bool -> Bool -> Bool -> Bool
 > and3 = ?and3_def
 
 > test_and3_1 : (and3 True  True  True)  = True
@@ -323,42 +331,46 @@ describing its elements to be inductive.
   For example, we can define (a unary representation of) natural numbers as
 follows:
 
-> data Nat' = Zero
->           | S Nat'
+```idris
+data Nat = Z
+         | S Nat
+```
 
   The clauses of this definition can be read:
 
-  - `Zero` is a natural number.
+  - `Z` is a natural number.
   - `S` can be put in front of a natural number to yield another one --- if `n`
     is a natural number, then `S n` is too.
 
-  Again, let's look at this in a little more detail. The definition of nat says
-how expressions in the set nat can be built:
+  Again, let's look at this in a little more detail. The definition of `Nat`
+says how expressions in the set `Nat` can be built:
 
-  - `Zero` and `S` are constructors;
-  - The expression `Zero` belongs to the set `Nat`;
+  - `Z` and `S` are constructors;
+  - The expression `Z` belongs to the set `Nat`;
   - If `n` is an expression belonging to the set `Nat`, then `S n` is also an
     expression belonging to the set `Nat`;
   - And expressions formed in these two ways are the only ones belonging to the
     set `Nat`.
 
-  The same rules apply for our definitions of `Day`, `Boolean`, `Color`, etc.
+  The same rules apply for our definitions of `Day`, `Bool`, `Color`, etc.
 
   The above conditions are the precise force of the _Inductive Types_. They
-imply that the expression `Zero`, the expression `S Zero`, the expression
-`S (S Zero)`, the expression `S (S (S Zero))`, and so on all belong to the set
-`Nat`, while other expressions built from data constructors, like `True`,
-`True /\ False`, `S (S False)`, and `Zero (Zero (Zero S))` do not.
+imply that the expression `Z`, the expression `S Z`, the expression `S (S Z)`,
+the expression `S (S (S Z))`, and so on all belong to the set `Nat`, while other
+expressions built from data constructors, like `True`, `True && False`,
+`S (S False)`, and `Z (Z (Z S))` do not.
 
   A critical point here is that what we've done so far is just to define a
-_representation_ of numbers: a way of writing them down. The names `Zero` and
-`S` are arbitrary, and at this point they have no special meaning --- they are
-just two different marks that we can use to write down numbers (together with a
-rule that says any `Nat'` will be written as some string of `S` marks followed
-by a `Zero`). If we like, we can write essentially the same definition this way:
+_representation_ of numbers: a way of writing them down. The names `Z` and `S`
+are arbitrary, and at this point they have no special meaning --- they are just
+two different marks that we can use to write down numbers (together with a rule
+that says any `Nat'` will be written as some string of `S` marks followed by a
+`Z`). If we like, we can write essentially the same definition this way:
 
-> data Nat'' = Stop
->            | Tick Nat'
+```idris
+data Nat' = Stop
+          | Tick Nat'
+```
 
   The _interpretation_ of these marks comes from how we use them to compute.
 
@@ -366,11 +378,11 @@ by a `Zero`). If we like, we can write essentially the same definition this way:
 natural numbers just as we did above with booleans and days --- for example,
 here is the predecessor function:
 
-> pred : Nat' -> Nat'
-> pred n = case n of
->              Zero => Zero
->              S n' => n'
-
+```idris
+pred : Nat -> Nat
+pred  Z    = Z
+pred (S n) = n
+```
   The second branch can be read: "if `n` has the form `S n'` for some `n'`, then
 return `n'`."
 
@@ -403,10 +415,8 @@ and functions like `minusTwo`:
 
 ```idris
 ...> :t S
-Basics.S : Nat' -> Nat'
-Prelude.Nat.S : Nat -> Nat
+S : Nat -> Nat
 ...> :t pred
-Basics.pred : Nat' -> Nat'
 Prelude.Nat.pred : Nat -> Nat
 Prelude.pred : Enum a => a -> a
 ...> :t minusTwo
@@ -431,9 +441,10 @@ is by destructuring instead of a case clause. (The totality checker has better
 support for destructuring)
 
 > even : Nat -> Bool
-> even  Z    = True
-> even (S Z) = False
-> even (S (S n')) = even n'
+> even n = case n of
+>              Z        => True
+>              S  Z     => False
+>              S (S n') => even n'
 
   We can define `odd` by a similar declaration, but here is a simpler
 definition:
@@ -451,32 +462,36 @@ by `Refl(exivity)`. We'll see more about why that is shortly.)
 
   Naturally, we can also define multi-argument functions by recursion.
 
-> plus' : Nat -> Nat -> Nat
-> plus' Z      m = m
-> plus' (S n') m = S (plus' n' m)
+```idris
+plus : Nat -> Nat -> Nat
+plus Z     m = m
+plus (S n) m = S (plus n m)
+```
 
   Adding three to two now gives us five, as we'd expect.
 
 ```idris
-...> plus' 3 2
+...> plus 3 2
 5 : Nat
 ```
 
   The evaluation that Idris performs to reach this conclusion can be visualized
 as follows:
 
-  1. `plus' (S (S (S Z))) (S (S Z))`
-  2. `S (plus' (S (S Z)) (S (S Z)))`
-  3. `S (S (plus' (S Z) (S (S Z))))`
-  4. `S (S (S plus' Z (S (S Z))))`
+  1. `plus (S (S (S Z))) (S (S Z))`
+  2. `S (plus (S (S Z)) (S (S Z)))`
+  3. `S (S (plus (S Z) (S (S Z))))`
+  4. `S (S (S plus Z (S (S Z))))`
   5. `S (S (S (S (S Z))))`
 
   We can also destructure any number of arguments at once:
 
-> minus' : Nat -> Nat -> Nat
-> minus'  Z      _     = Z
-> minus'  n      Z     = n
-> minus' (S n') (S m') = minus' n' m'
+```idris
+minus : Nat -> Nat -> Nat
+minus  Z     _    = Z
+minus  n     Z    = n
+minus (S n) (S m) = minus n m
+```
 
   Again, the `_` in the first line is a wildcard pattern. Writing `_` in an
 argument destruting is the same as writing some variable that doesn't get used
@@ -492,9 +507,9 @@ on the right-hand side. This avoids the need to invent a variable name.
 
   Recall the standard mathematical factorial function:
 
- > `factorial(0) = 1`
+ > $\text{factorial}(0) = 1$
 
- > `factorial(n) = n * factorial(n-1) (if n>0)`
+ > $\text{factorial}(n) = n * factorial(n-1) (if n>0)$
 
   Translate this into Idris.
 
@@ -632,7 +647,7 @@ Not (n + 1 = 0) will be false.
 
 > plus_1_neq_0 : (n: Nat) -> Not (n + 1 = 0)
 > plus_1_neq_0 Z     = absurd -- 1 /= 0
-> plus_1_neq_0 (S n) = absurd -- Unfolding
+> plus_1_neq_0 (S n) = absurd -- Unfolding equality
 
   Destructuring generates two subgoals, which we must then prove, separately, in
 order to get Idris to accept the theorem. In this example, each of the subgoals

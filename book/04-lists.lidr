@@ -1,14 +1,6 @@
 = Working with Structured Data
 
-\long\def\ignore#1{}
-
-\ignore{
-
-> import Prelude.Uninhabited
-
-}
-
-== Pairs of Numbers
+== Tuples of Numbers
 
   In an Inductive type definition, each constructor can take any number of
 arguments --- none (as with `True` and `Zero`), one (as with `S`), or more than
@@ -43,7 +35,7 @@ two-argument constructors.
 ```
 
   Since pairs are used quite a bit, it is nice to be able to write them with the
-  standard mathematical notation $(x, y)$ instead of `Pair x y`. (we've actually
+standard mathematical notation $(x, y)$ instead of `Pair x y`. (we've actually
 seen this already in the Basics chapter --- this works because the pair notation
 is also provided as part of the standard library)
 
@@ -63,31 +55,31 @@ complete proofs with just reflexivity (and its built-in simplification):
 
   But reflexivity is not enough if we state the lemma in a more natural way:
 
-> parameters (p: NatProd)
->     surjective_pairing_stuck : p = Pair (first p) (second p)
+> parameters (p: (Nat, Nat))
+>     surjective_pairing_stuck : p = (fst p, snd p)
 >     surjective_pairing_stuck = ?Refl -- Reflexivity doesn't work
 
   We have to expose the structure of `p` so that `Refl` can perform the pattern
 match in `first` and `second`. We can do this destructuring.
 
-> surjective_pairing : (p: NatProd) -> p = Pair (first p) (second p)
-> surjective_pairing (Pair a b) = Refl
+> surjective_pairing : (p: (Nat, Nat)) -> p = (fst p, snd p)
+> surjective_pairing (a, b) = Refl
 
   Notice that, unlike its behavior with `Nat`, destructuring generates just one
-subgoal here. That's because NatProds can only be constructed in one way.
+subgoal here. That's because Tuples can only be constructed in one way.
 
 ==== Exercise:
 
   1 star (`snd_fst_is_swap`)
 
-> snd_fst_is_swap : (p: NatProd) -> Pair (second p) (first p) = swap_pair p
+> snd_fst_is_swap : (p: (Nat, Nat)) -> (snd p, fst p) = swap p
 > snd_fst_is_swap = ?snd_fst_is_swap_proof
 
 ==== Exercise:
 
   1 star, optional (`fst_swap_is_snd`)
 
-> fst_swap_is_snd : (p: NatProd) -> first (swap_pair p) = second p
+> fst_swap_is_snd : (p: (Nat, Nat)) -> fst (swap p) = snd p
 > fst_swap_is_snd = ?fst_swap_is_snd_proof
 
 == Lists of Numbers
@@ -118,34 +110,40 @@ declarations mean exactly the same thing:
 > my_list_3 : List Nat
 > my_list_3 = [1, 2, 3]
 
-=== Repeat
+=== Replicate
 
   A number of functions are useful for manipulating lists. For example, the
-`repeat` function takes a number n and a count and returns a list of length
-`c` where every element is `n`.
+`replicate` function takes a number `c` and an number `n` and returns a list of
+length `c` where every element is `n`.
 
-> repeat : Nat -> Nat -> NatList
-> repeat _  Z    = Nil
-> repeat n (S c) = Cons n (repeat n c)
+```idris
+replicate : Nat -> Nat -> List Nat
+replicate Z     _ = []
+replicate (S c) n = n :: (replicate n c)
+```
 
 === Length
 
   The `length` function calculates the length of a list.
 
-> length : NatList -> Nat
-> length Nil        = Z
-> length (Cons _ l) = S (length l)
+```idris
+length : List Nat -> Nat
+length  []    = Z
+length (_::l) = S (length l)
+```
 
 === Append
 
-  The `app` function concatenates (appends) two lists.
+  The `++` function appends two lists.
 
-> app : NatList -> NatList -> NatList
-> app  Nil        l2 = l2
-> app (Cons h l1) l2 = Cons h (app l1 l2)
+```idris
+infixl 7 ++
+(++) : List Nat -> List Nat -> List Nat
+(++)  []     l2 = l2
+(++) (h::l1) l2 = h :: (l1 ++ l2)
+```
 
-  Actually, `app` will be used a lot in some parts of what follows, so it is
-convenient to have an infix operator for it. Idris uses `++`.
+  _Sidenote_: `++` will be used a lot in some parts of what follows.
 
 > test_app1 : [1, 2, 3] ++ [4, 5] = [1, 2, 3, 4, 5]
 > test_app1 = Refl
@@ -158,41 +156,57 @@ convenient to have an infix operator for it. Idris uses `++`.
 
 === Head and Tail
 
-  Here are two smaller examples of programming with lists. The hd function
-returns the first element (the "head") of the list, while tl returns everything
-but the first element (the "tail"). Of course, the empty list has no first
-element, so we must restrict the domain.
+  Here are two smaller examples of programming with lists. The `head` function
+returns the first element (the "head") of the list, while `tail` returns
+everything but the first element (the "tail"). Of course, the empty list has no
+first element, so we must restrict the argument to lists with at least 1 element
+--- or Non-Empty lists. Doing so will _restrict_ the domain of head to `NonEmpty`
+lists.
 
   <!--- TODO: Add further explanation on NonEmpty / Restricting Domains -->
 
-> data NonEmptyNatList : NatList -> Type where
->      -- The only constructor only works for a NatList with a Cons
->      IsNonEmpty : NonEmptyNatList (Cons _ _)
-
-> Uninhabited (NonEmptyNatList Nil) where
->     uninhabited IsNonEmpty impossible
-
-> hd : (l: NatList) -> {auto ok: NonEmptyNatList l} -> Nat
-> hd  Nil       impossible
-> hd (Cons e _) = e
-
-> test_hd1 : hd (Cons 1 (Cons 2 (Cons 3 Nil))) = 1
-> test_hd1 = Refl
-
-  However, attempting to evaluate a `Nil` will result in a _Type Error_ **not**
-a _Runtime Error_. This also means that when using hd in a program, we will be
-required by the type system to ensure we are not passing an empty list.
-
 ```idris
-...> hd Nil
-(input):1:1-6:When checking argument ok to function Main.hd:
-        Can't find a value of type
-                NonEmptyNatList []
+data NonEmpty : List Nat -> Type where
+     -- The only constructor only works for a List with a cons(::)
+     IsNonEmpty : NonEmpty (_::_)
 ```
 
-> tl : NatList -> NatList
-> tl  Nil       = Nil
-> tl (Cons _ l) = l
+  We have to show Idris explicitly that `NonEmpty []` is impossible with the
+given definition.
 
-> test_tl : tl (Cons 1 (Cons 2 (Cons 3 Nil))) = (Cons 2 (Cons 3 Nil))
-> test_tl = Refl
+```idris
+Uninhabited (NonEmpty []) where
+    uninhabited IsNonEmpty impossible
+```
+
+
+```idris
+head : (l: List Nat) -> {auto ok: NonEmpty l} -> Nat
+head  []    impossible
+head (h::_) = h
+```
+
+> test_head : head [1, 2, 3] = 1
+> test_head = Refl
+
+  However, attempting to evaluate a `Nil` will result in a _Type Error_ **not**
+a _Runtime Error_. This also means that when using `head` in a program, we will
+to show the type system that we are not passing an empty list.
+
+```idris
+...> head Nil
+(input):1:1-6:When checking argument ok to function Main.hd:
+        Can't find a value of type
+                NonEmpty []
+```
+
+  `tail` is more straightforward.
+
+```idris
+tail : List Nat -> List Nat
+tail  []    = []
+tail (_::l) = l
+```
+
+> test_tail : tail [1, 2, 3] = [2, 3]
+> test_tail = Refl

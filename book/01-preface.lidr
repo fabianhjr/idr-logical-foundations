@@ -1,4 +1,4 @@
-= Preface {-}
+= Preface {.unnumbered}
 
 == Welcome
 
@@ -170,7 +170,8 @@ the [Postscript](#postscript) chapter.
   - A current installation of Idris, available from the
     [Idris home page](http://idris-lang.org/). These files have been tested
     with Idris 1.3.0.
-  - An editor with integrations for Idris. (E.g. Atom, Emacs, or Vim)
+  - An editor with integrations for Idris. (E.g. Atom, Emacs, or Vim) You might
+    want to become acquainted with their [interactive editing] features.
 
 === Exercises
 
@@ -251,3 +252,9 @@ developed under an MIT License.
   Development of Logical Foundations in Idris used Software Foundations in
 Idris (2016) from Eric Bailey et al. as a reference for the development of some
 Idris specific considerations.
+
+  <!---            -->
+  <!--- References -->
+  <!---            -->
+
+[interactive editing]: https://github.com/idris-lang/Idris-dev/wiki/Editors#interactive-editing-commands
