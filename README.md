@@ -25,6 +25,4 @@ public medium. (Including GitHub/GitLab/etc)
   Just replace the type holes (`?type_hole`) for your solutions and run `make
 test`to run the typechecker.
 
-<a rel="license" href=""><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png" /></a><br /></a>.
-
 This work is licensed under a [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License](http://creativecommons.org/licenses/by-nc-sa/4.0/)
