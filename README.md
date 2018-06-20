@@ -5,9 +5,10 @@ al. It might also use Software Foundations in Idris (2016) as a reference.
 
 # Requirements
 
- - Make  (Optional)
  - Idris
- - Pandoc
+ - Pandoc (Optional)
+ - Make  (Optional)
+ - Fonts: Montserrat, Fira Sans, and Fira Code (Optional)
 
 # Building
 
@@ -19,5 +20,5 @@ al. It might also use Software Foundations in Idris (2016) as a reference.
   **Important**: Per Benjamin C. Pierce request, do not post your solutions in a
 public medium. (Including GitHub/GitLab/etc)
 
-  Just replace the type holes (`?type_hole`) for your solutions and run either
-`make` or `make test` to run the typechecker.
+  Just replace the type holes (`?type_hole`) for your solutions and run `make
+test`to run the typechecker.

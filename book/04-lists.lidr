@@ -158,10 +158,9 @@ infixl 7 ++
 
   Here are two smaller examples of programming with lists. The `head` function
 returns the first element (the "head") of the list, while `tail` returns
-everything but the first element (the "tail"). Of course, the empty list has no
-first element, so we must restrict the argument to lists with at least 1 element
---- or Non-Empty lists. Doing so will _restrict_ the domain of head to `NonEmpty`
-lists.
+everything but the first element (the "tail"). Of course, the empty list `[]`
+has no first element nor a tail, so we must _restrict_ the domain argument to
+lists with at least 1 element --- Non-Empty lists.
 
   <!--- TODO: Add further explanation on NonEmpty / Restricting Domains -->
 
@@ -200,11 +199,11 @@ to show the type system that we are not passing an empty list.
                 NonEmpty []
 ```
 
-  `tail` is more straightforward.
+  `tail` is analogous.
 
 ```idris
-tail : List Nat -> List Nat
-tail  []    = []
+tail : List Nat -> {auto ok: NonEmpty l} -> List Nat
+tail  []    impossible
 tail (_::l) = l
 ```
 
@@ -379,3 +378,104 @@ help if you get stuck!
 > -- Code here
 
 == Reasoning About Lists
+
+  As with numbers, simple facts about list-processing functions can sometimes be
+proved entirely by simplification. For example, the simplification performed by
+reflexivity is enough for this theorem...
+
+> parameters (l: List Nat)
+>     nil_app : [] ++ l = l
+>     nil_app = Refl
+
+  ...because the `[]` is substituted into the "scrutinee" (the expression whose
+value is being "scrutinized" by the match) in the definition of `++`, allowing
+the match itself to be simplified.
+
+  Also, as with numbers, it is sometimes helpful to perform case analysis on the
+possible shapes (empty or non-empty) of an unknown list.
+
+> tail_length_pred : (l: List Nat) -> {auto ok: NonEmpty l}
+>                  -> pred (length l) = length (tail l)
+> tail_length_pred  []     impossible
+> tail_length_pred (x::xs) = Refl
+
+  Here, the `[]` case is skipped because `tail` doesn't take as input an empty
+list. (`[]` is not in its domain)
+
+  Usually, though, interesting theorems about lists require induction for their
+proofs.
+
+==== Micro-Sermon
+
+  Simply reading example proof scripts will not get you very far! It is
+important to work through the details of each one, using Idris and thinking
+about what each step achieves. Otherwise it is more or less guaranteed that the
+exercises will make no sense when you get to them. 'Nuff said.
+
+=== Induction on Lists
+
+  Proofs by induction over datatypes like `List Nat` are a little less familiar
+than standard natural number induction, but the idea is equally simple. Each
+Inductive step defines a set of data values that can be built up using
+the declared constructors: a `Bool` can be either `True` or `False`; a `Nat` can
+be either `Z` or `S` applied to another `Nat`; a `List Nat` can be either `[]`
+or `::` applied to a `Nat` and a `List Nat`.
+
+  Moreover, applications of the declared constructors to one another are the
+only possible shapes that elements of an inductively defined set can have, and
+this fact directly gives rise to a way of reasoning about inductively defined
+sets: a `Nat` is either `Z` or else it is `S` applied to some smaller `Nat`; a
+`List Nat` is either `[]` or else it is `::` applied to some `Nat` and some
+smaller `List Nat`; etc. So, if we have in mind some proposition $P$ that
+mentions a `List Nat` $l$ and we want to argue that $P$ holds for all lists, we
+can reason as follows:
+
+  - First, show that $P$ is true of $l$ when $l$ is `[]`.
+  - Then show that $P$ is true of $l$ when $l$ is `x :: xs` for some `Nat` `x`
+and some smaller `List Nat` `xs`, assuming that $P$ is true for `xs`.
+
+  Since larger lists can only be built up from smaller ones, eventually reaching
+`[]`, these two arguments together establish the truth of $P$ for all `List Nat`
+$l$. Here's a concrete example:
+
+> app_assoc : (l1, l2, l3: List Nat) -> (l1 ++ l2) ++ l3 = l1 ++ (l2 ++ l3)
+> app_assoc  []     _  _  = Refl
+> app_assoc (x::xs) l2 l3 = rewrite app_assoc xs l2 l3 in Refl
+
+  Notice that, as when doing induction on natural numbers, this Idris proof is
+not especially illuminating as a static written document --- it is easy to see
+what's going on if you are reading the proof in an interactive Idris session and
+you can see the current goal and context at each point, but this state is not
+visible in the written-down parts of the Idris proof. So a natural-language
+proof --- one written for human readers --- will need to include more explicit
+signposts; in particular, it will help the reader stay oriented if we remind
+them exactly what the induction hypothesis is in the second case.
+
+  For comparison, here is an informal proof of the same theorem.
+
+  **Theorem**: For all lists $l_1, l_2,\ \text{and}\ l_3, (l_1 \app l_2) \app
+l_3 = l_1 \app (l_2 \app l_3)$
+
+  **Proof**: By induction on $l_1$
+
+  - First, suppose $l_1 = \nil$. We must show
+
+    $$(\nil \app l_2) \app l_3 = \nil \app (l_2 \app l_3)$$
+
+    which follows directly from the definition of \app.
+
+  - Next, suppose $l_1 = n \ :: \ l_1'$, with
+
+    $$(l_1' \app l_2) \app l_3 = l_1' \app (l_2 \app l_3)$$
+
+    (the induction hypothesis). We must show
+
+    $$((n :: l_1') \app l_2) \app l_3 = (n :: l_1') \app (l_2 \app l_3)$$
+
+    By the definition of $\app$, this follows from
+
+    $$n :: ((l_1' \app l_2) \app l_3) = n :: (l_1' \app (l_2 \app l_3))$$
+
+    which is immediate from the induction hypothesis.
+
+  $\Box$
