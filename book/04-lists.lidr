@@ -134,7 +134,7 @@ length (_::l) = S (length l)
 
 === Append
 
-  The `++` function appends two lists.
+  The \app function appends two lists.
 
 ```idris
 infixl 7 ++
@@ -143,7 +143,7 @@ infixl 7 ++
 (++) (h::l1) l2 = h :: (l1 ++ l2)
 ```
 
-  _Sidenote_: `++` will be used a lot in some parts of what follows.
+  _Sidenote_: \app will be used a lot in some parts of what follows.
 
 > test_app1 : [1, 2, 3] ++ [4, 5] = [1, 2, 3, 4, 5]
 > test_app1 = Refl
@@ -158,7 +158,7 @@ infixl 7 ++
 
   Here are two smaller examples of programming with lists. The `head` function
 returns the first element (the "head") of the list, while `tail` returns
-everything but the first element (the "tail"). Of course, the empty list `[]`
+everything but the first element (the "tail"). Of course, the empty list \nil
 has no first element nor a tail, so we must _restrict_ the domain argument to
 lists with at least 1 element --- Non-Empty lists.
 
@@ -387,8 +387,8 @@ reflexivity is enough for this theorem...
 >     nil_app : [] ++ l = l
 >     nil_app = Refl
 
-  ...because the `[]` is substituted into the "scrutinee" (the expression whose
-value is being "scrutinized" by the match) in the definition of `++`, allowing
+  ...because the \nil is substituted into the "scrutinee" (the expression whose
+value is being "scrutinized" by the match) in the definition of \app, allowing
 the match itself to be simplified.
 
   Also, as with numbers, it is sometimes helpful to perform case analysis on the
@@ -399,8 +399,8 @@ possible shapes (empty or non-empty) of an unknown list.
 > tail_length_pred  []     impossible
 > tail_length_pred (x::xs) = Refl
 
-  Here, the `[]` case is skipped because `tail` doesn't take as input an empty
-list. (`[]` is not in its domain)
+  Here, the \nil case is skipped because `tail` doesn't take as input an empty
+list. (\nil is not in its domain)
 
   Usually, though, interesting theorems about lists require induction for their
 proofs.
@@ -418,24 +418,24 @@ exercises will make no sense when you get to them. 'Nuff said.
 than standard natural number induction, but the idea is equally simple. Each
 Inductive step defines a set of data values that can be built up using
 the declared constructors: a `Bool` can be either `True` or `False`; a `Nat` can
-be either `Z` or `S` applied to another `Nat`; a `List Nat` can be either `[]`
+be either `Z` or `S` applied to another `Nat`; a `List Nat` can be either \nil
 or `::` applied to a `Nat` and a `List Nat`.
 
   Moreover, applications of the declared constructors to one another are the
 only possible shapes that elements of an inductively defined set can have, and
 this fact directly gives rise to a way of reasoning about inductively defined
 sets: a `Nat` is either `Z` or else it is `S` applied to some smaller `Nat`; a
-`List Nat` is either `[]` or else it is `::` applied to some `Nat` and some
+`List Nat` is either \nil or else it is `::` applied to some `Nat` and some
 smaller `List Nat`; etc. So, if we have in mind some proposition $P$ that
 mentions a `List Nat` $l$ and we want to argue that $P$ holds for all lists, we
 can reason as follows:
 
-  - First, show that $P$ is true of $l$ when $l$ is `[]`.
+  - First, show that $P$ is true of $l$ when $l$ is \nil.
   - Then show that $P$ is true of $l$ when $l$ is `x :: xs` for some `Nat` `x`
 and some smaller `List Nat` `xs`, assuming that $P$ is true for `xs`.
 
   Since larger lists can only be built up from smaller ones, eventually reaching
-`[]`, these two arguments together establish the truth of $P$ for all `List Nat`
+\nil, these two arguments together establish the truth of $P$ for all `List Nat`
 $l$. Here's a concrete example:
 
 > app_assoc : (l1, l2, l3: List Nat) -> (l1 ++ l2) ++ l3 = l1 ++ (l2 ++ l3)
@@ -479,3 +479,178 @@ l_3 = l_1 \app (l_2 \app l_3)$
     which is immediate from the induction hypothesis.
 
   $\Box$
+
+=== Reversing a List
+
+  For a slightly more involved example of inductive proof over lists, suppose we
+use \app to define a list-reversing function `rev`:
+
+> rev : List Nat -> List Nat
+> rev  []     = []
+> rev (x::xs) = rev xs ++ [x]
+
+> test_rev1 : rev [1, 2, 3] = [3, 2, 1]
+> test_rev1 = Refl
+> test_rev2 : rev [] = []
+> test_rev2 = Refl
+
+=== Properties of `rev`
+
+  Now let's prove some theorems about our newly defined `reverse`. For something
+a bit more challenging than what we've seen, let's prove that reversing a list
+does not change its length. Our first attempt gets stuck in the successor
+case...
+
+> rev_length_firsttry : (l: List Nat) -> length (rev l) = length l
+> rev_length_firsttry  []     = Refl
+> rev_length_firsttry (x::xs) = ?Rewrite -- rewrite errors
+
+  This is the error you would get if you try to rewrite the inductive
+hypothesis:
+
+```idris
+    |
+... | > reverse_length_firsttry (x::xs) = rewrite rev_length_firsttry xs in ?Refl
+    |                                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      When checking right hand side of rev_length_firsttry with expected type
+              length (rev (x :: xs)) = length (x :: xs)
+
+      rewriting length (rev xs) to length xs did not change type length
+                                                 (rev xs ++ [x]) = S (length xs)
+
+```
+
+  So let's take the equation relating \app and `length` that would have enabled
+us to make progress and prove it as a separate lemma.
+
+> app_length : (l1, l2: List Nat)
+>            -> length (l1 ++ l2) = (length l1) + (length l2)
+> app_length  []     l2 = Refl
+> app_length (x::xs) l2 = rewrite app_length xs l2 in Refl
+
+  Note that, to make the lemma as general as possible, we quantify over all
+`List Nat`, not just those that result from an application of `reverse`. This
+should seem natural, because the truth of the goal clearly doesn't depend on the
+list having been reversed. Moreover, it is easier to prove the more general
+property.
+
+  Now we can complete the original proof.
+
+> rev_length : (l: List Nat) -> length (rev l) = length l
+> rev_length  []     = Refl
+> rev_length (x::xs) =
+>     -- Rewrite (length rev xs ++ [x]) into length (rev xs) + (length [x])
+>     --                                   = length (rev xs) + 1
+>     rewrite app_length (rev xs) [x] in
+>     -- Rewrite length (rev xs) + 1 into 1 + length (rev xs)
+>     rewrite plusCommutative (length (rev xs)) 1 in
+>     -- Inductive hypothesis for length (rev xs) = length xs
+>     rewrite rev_length xs in Refl
+
+  For comparison, here are informal proofs of these two theorems:
+
+  **Theorem**: For all lists $l_1\ \text{and}\ l_2,\ \texttt{length}(l_1 \app
+l_2) =\ \texttt{length}\ l_1 + \texttt{length}\ l_2$
+
+  **Proof**: By induction on $l_1$
+
+  - First, suppose $l_1 = \nil$. We must show
+
+    $$\texttt{length}(\nil \app l_2) = \texttt{length} \nil + \texttt{length}\ 
+    l2$$
+
+    which follows directly from the definitions of `length` and \app.
+
+  - Next, suppose $l_1 = n :: l_1'$, with
+
+    $$\texttt{length}(l_1' \app l_2) = \texttt{length}\ l_1' +
+    \texttt{length}\ l_2$$
+
+    We must show
+
+    $$\texttt{length}((n::l_1') \app l_2) = \texttt{length}(n::l_1') +
+    \texttt{length}\ l_2$$
+
+    This follows directly from the definitions of `length` and \app together
+    with the induction hypothesis.
+
+  $\Box$
+
+  **Theorem**: For all lists $l, \texttt{length}(\texttt{rev}\ l) =
+  \texttt{length}\ l$
+
+  **Proof**: By induction on $l$
+
+  - First, suppose $l = \nil$. We must show
+
+    $$\texttt{length}(\texttt{rev} \nil) = \texttt{length} \nil$$
+
+    which follows directly from the definitions of `length` and `rev`.
+
+  - Next, suppose $l = n::l'$, with
+
+    $$\texttt{length}(\texttt{rev}\ l') = \texttt{length}\ l'$$
+
+    We must show
+
+    $$\texttt{length}(\texttt{rev}(n :: l')) = \texttt{length}(n :: l')$$
+
+    By the definition of `rev`, this follows from
+
+    $$\texttt{length}((\texttt{rev}\ l') \app [n]) = S (\texttt{length}\ l')$$
+
+    which, by the previous lemma, is the same as
+
+    $$\texttt{length}(\texttt{rev}\ l') + \texttt{length}\ [n] = S (
+    \texttt{length}\ l')$$
+
+    This follows directly from the induction hypothesis and the definition of
+    `length`.
+
+  $\Box$
+
+  The style of these proofs is rather longwinded and pedantic. After the first
+few, we might find it easier to follow proofs that give fewer details (which can
+easily work out in our own minds or on scratch paper if necessary) and just
+highlight the non-obvious steps. In this more compressed style, the above proof
+might look like this:
+
+  **Theorem**: For all lists $l, \texttt{length}(\texttt{rev}\ l) =
+  \texttt{length}\ l$
+
+  **Proof**: First, observe that `length` $(l \app [n]) = S (\texttt{length}\ 
+  l)$ for any $l$ (this follows by a straightforward induction on $l$). The main
+  property again follows by induction on $l$, using the observation together
+  with the induction hypothesis in the case where $l = n'::l'$. $\Box$
+
+  Which style is preferable in a given situation depends on the sophistication
+of the expected audience and how similar the proof at hand is to ones that the
+audience will already be familiar with. The more pedantic style is a good
+default for our present purposes.
+
+=== Search
+
+  We've seen that proofs can make use of other theorems we've already proved,
+e.g., using `rewrite`. But in order to refer to a theorem, we need to know its
+name! Indeed, it is often hard even to remember what theorems have been proven,
+much less what they are called.
+
+   Idris's `:apropos` command is quite helpful with this. Typing `:apropos foo`
+will cause Idris to display a list of all definitions involving `foo`. For
+example, try typing the following line to see a list of theorems that we have
+proved about `rev`:
+
+```idris
+:apropos rev
+```
+
+  Keep `apropos` in mind as you do the following exercises and throughout the
+rest of the book; it can save you a lot of time!
+
+=== List Exercises, Part 1
+
+==== Exercise:
+
+  3 stars (`list_exercises`)
+
+  More practice with lists:
