@@ -216,12 +216,6 @@ welcome!
 
 == Thanks
 
-=== National Science Foundation
-
-  Development of the _Software Foundations_ series has been supported, in part,
-by the National Science Foundation under the NSF Expeditions grant 1521523, _The
-Science of Deep Specification_.
-
 === Logical Foundations in Coq
 
   Development of Logical Foundations in Idris is a translation of Logical
@@ -246,12 +240,6 @@ developed under an MIT License.
  > LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  > OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  > THE SOFTWARE.
-
-=== Software Foundations in Idris
-
-  Development of Logical Foundations in Idris used Software Foundations in
-Idris (2016) from Eric Bailey et al. as a reference for the development of some
-Idris specific considerations.
 
   <!---            -->
   <!--- References -->
