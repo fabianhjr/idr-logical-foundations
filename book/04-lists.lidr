@@ -689,3 +689,89 @@ rest of the book; it can save you a lot of time!
   3 stars (`list_exercises`)
 
   More practice with lists:
+
+> app_nil_r : (l: List Nat) -> l ++ [] = l
+> app_nil_r = ?app_nil_r_proof
+
+> rev_app_distr : (l1, l2: List Nat) -> rev (l1 ++ l2) = rev l2 ++ rev l1
+> rev_app_distr = ?rev_app_distr_proof
+
+> rev_involutive : (l: List Nat) -> rev (rev l) = l
+> rev_involutive = ?rev_involutive_proof
+
+  There is a short solution to the next one. If you find yourself getting
+tangled up, step back and try to look for a simpler way.
+
+> app_assoc4 : (l1, l2, l3, l4: List Nat)
+>            -> l1 ++ (l2 ++ (l3 ++ l4)) = ((l1 ++ l2) ++ l3) ++ l4
+> app_assoc4 = ?app_assoc4_proof
+
+  An exercise about your implementation of `nonzeros`:
+
+> nonZeros_app : (l1, l2: List Nat)
+>              -> nonZeros (l1 ++ l2) = (nonZeros l1) ++ (nonZeros l2)
+> nonZeros_app = ?nonZeros_app_proof
+
+==== Exercise:
+
+  2 stars (`eq_natlist`)
+
+  Fill in the definition of `eq`, which compares lists of numbers for equality.
+Prove that `eq l l` yields `True` for every list `l`.
+
+> eq : (l1, l2: List Nat) -> Bool
+> eq = ?eq_def
+
+> test_eq1 : eq [] [] = True
+> test_eq1 = ?eq1
+> test_eq2 : eq [1, 2, 3] [1, 2, 3] = True
+> test_eq2 = ?eq2
+> test_eq3 : eq [1, 2, 3] [1, 2, 4] = False
+> test_eq3 = ?eq3
+
+> eq_refl : (l: List Nat) -> eq l l = True
+> eq_refl = ?eq_refl_proof
+
+=== List Exercises, Part 2
+
+  Here are a couple of little theorems to prove about your definitions about
+bags above.
+
+==== Exercise:
+
+  1 star (`count_member_nonzero`)
+
+  In the following exercise `GTE n m` is type that only exists for n >= m. It
+can be implemented in a similar way to `NonEmpty l`. Its documentation is
+available in `Prelude.Nat`. Prelude.Nat also provides `LTE`, `LT`, `GT`.
+
+> count_member_nonzero : (s: Bag) -> GTE (count 1 (1 :: s)) 1
+> count_member_nonzero = ?count_member_nonzero_proof
+
+==== Exercise:
+
+  3 stars, advanced (`remove_decreases_count`)
+
+> remove_decreases_count : (s: Bag) -> LT (count 0 (remove_one 0 s)) (count 0 s)
+> remove_decreases_count = ?remove_decreases_count_proof
+
+==== Exercise:
+
+  3 stars, optional (`bag_count_sum`)
+
+  Write down an interesting theorem `bag_count_sum` about bags involving the
+functions `count` and `sum`, and prove it using Idris. (You may find that the
+difficulty of the proof depends on how you defined count!)
+
+> -- Code here
+
+==== Exercise:
+
+  4 stars, advanced (`rev_injective`)
+
+> rev_injective : (l1, l2: List Nat) -> rev l1 = rev l2 -> l1 = l2
+> rev_injective = ?rev_injective_proof
+
+  (There is a hard way and an easy way to do this.)
+
+== Options
