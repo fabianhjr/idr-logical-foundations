@@ -8,7 +8,32 @@ proving the fact that it is also a neutral element on the right...
 
 > parameters (n: Nat)
 >     plus_n_0_firsttry : n + 0 = n
->     plus_n_0_firsttry = ?Refl -- Reflexivity doesn't work.
+>     plus_n_0_firsttry = ?Refl -- Refl will error
+
+-----
+
+==== Error
+
+```idris
+    |
+... | >     plus_n_0_firsttry = Refl
+    |                           ~~~~
+When checking right hand side of Main.plus_n_0_firsttry with expected type
+        n + 0 = n
+
+Type mismatch between
+        n = n (Type of Refl)
+and
+        plus n 0 = n (Expected type)
+
+Specifically:
+        Type mismatch between
+                n
+        and
+                plus n 0
+```
+
+-----
 
   ...can't be done in the same simple way. Just applying reflexivity doesn't
 work, since the `n` in `n + 0` is an arbitrary unknown number, so the match in
@@ -20,7 +45,32 @@ branch where n = S n' for some n' we get stuck in exactly the same way.
 
 > plus_n_0_secondtry : (n: Nat) -> n + 0 = n
 > plus_n_0_secondtry  Z    = Refl
-> plus_n_0_secondtry (S n) = ?Refl -- Reflexivity doesn't work.
+> plus_n_0_secondtry (S n) = ?Refl -- Refl will error
+
+-----
+
+==== Error
+
+```idris
+    |
+... | > plus_n_0_secondtry (S n) = Refl
+    |                              ~~~~
+When checking right hand side of plus_n_0_secondtry with expected type
+        S n + 0 = S n
+
+Type mismatch between
+        S n = S n (Type of Refl)
+and
+        S (plus n 0) = S n (Expected type)
+
+Specifically:
+        Type mismatch between
+                n
+        and
+                plus n 0
+```
+
+-----
 
   We could destructure one more time to get one step further, but, since `n` can
 be arbitrarily large, if we just go on like this we'll never finish.
@@ -189,22 +239,23 @@ ways of communicating ideas between human beings.
 
   For example, here is a proof that addition is associative:
 
-> plus_assoc' : (n, m, p: Nat) -> n + (m + p) = (n + m) + p
-> plus_assoc' Z     _ _ = Refl
-> plus_assoc' (S n) m p = rewrite plus_assoc' n m p in Refl
+> parameters (m, p: Nat)
+>     plus_assoc' : (n: Nat) -> n + (m + p) = (n + m) + p
+>     plus_assoc' Z     = Refl
+>     plus_assoc' (S n) = rewrite plus_assoc' n in Refl
 
   Idris is perfectly happy with this. For a human, however, it is difficult to
 make much sense of it. We can use comments and bullets to show the structure a
 little more clearly...
 
-> plus_assoc'' : (n, m, p: Nat) -> n + (m + p) = (n + m) + p
-> plus_assoc'' Z     _ _ =
->     -- If n=0 then 0 + (m + p) = m + p and (0 + m) + p = (m) + p
->     Refl
-> plus_assoc'' (S n) m p =
->     -- If n = S n' then use induction with the hypothesis that the
->     -- previous case is true.
->     rewrite plus_assoc'' n m p in Refl
+> parameters (m, p: Nat)
+>     plus_assoc'' : (n: Nat) -> n + (m + p) = (n + m) + p
+>     plus_assoc''  Z    =
+>         -- If n=0 then 0 + (m + p) = m + p and (0 + m) + p = (m) + p.
+>         Refl
+>     plus_assoc'' (S n) =
+>         -- If n = S n' then use the inductive hypothesis.
+>         rewrite plus_assoc'' n in Refl
 
   ...and if you're used to Idris you may be able to step through the tactics one
 after the other in your mind and imagine the state of the context and goal stack

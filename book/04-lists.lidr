@@ -57,10 +57,37 @@ complete proofs with just reflexivity (and its built-in simplification):
 
 > parameters (p: (Nat, Nat))
 >     surjective_pairing_stuck : p = (fst p, snd p)
->     surjective_pairing_stuck = ?Refl -- Reflexivity doesn't work
+>     surjective_pairing_stuck = ?Refl -- Refl will error
+
+-----
+
+==== Error
+
+```idris
+    |
+... | >     surjective_pairing_stuck = Refl
+    |                                  ~~~~
+When checking right hand side of Main.surjective_pairing_stuck with expected
+type
+        p = (fst p, snd p)
+
+Type mismatch between
+        (fst p, snd p) = (fst p, snd p) (Type of Refl)
+and
+        p = (fst p, snd p) (Expected type)
+
+Specifically:
+        Type mismatch between
+                p
+        and
+                (fst p, snd p)
+
+```
+
+-----
 
   We have to expose the structure of `p` so that `Refl` can perform the pattern
-match in `first` and `second`. We can do this destructuring.
+match in `fst` and `snd`. We can do this destructuring.
 
 > surjective_pairing : (p: (Nat, Nat)) -> p = (fst p, snd p)
 > surjective_pairing (a, b) = Refl
@@ -178,19 +205,22 @@ Uninhabited (NonEmpty []) where
     uninhabited IsNonEmpty impossible
 ```
 
+  And now we can restrict the domain of `head` and `tail` with an implicit auto
+argument that is of type `NonEmpty l`.
 
 ```idris
 head : (l: List Nat) -> {auto ok: NonEmpty l} -> Nat
-head  []    impossible
 head (h::_) = h
 ```
 
 > test_head : head [1, 2, 3] = 1
 > test_head = Refl
 
-  However, attempting to evaluate a `Nil` will result in a _Type Error_ **not**
+  However, attempting to evaluate a \nil will result in a _Type Error_ **not**
 a _Runtime Error_. This also means that when using `head` in a program, we will
-to show the type system that we are not passing an empty list.
+to show the type system that we are not possibly passing a \nil.
+
+-----
 
 ```idris
 ...> head []
@@ -199,11 +229,12 @@ to show the type system that we are not passing an empty list.
                 NonEmpty []
 ```
 
+-----
+
   `tail` is analogous.
 
 ```idris
 tail : List Nat -> {auto ok: NonEmpty l} -> List Nat
-tail  []    impossible
 tail (_::l) = l
 ```
 
@@ -438,9 +469,10 @@ and some smaller `List Nat` `xs`, assuming that $P$ is true for `xs`.
 \nil, these two arguments together establish the truth of $P$ for all `List Nat`
 $l$. Here's a concrete example:
 
-> app_assoc : (l1, l2, l3: List Nat) -> (l1 ++ l2) ++ l3 = l1 ++ (l2 ++ l3)
-> app_assoc  []     _  _  = Refl
-> app_assoc (x::xs) l2 l3 = rewrite app_assoc xs l2 l3 in Refl
+> parameters (l2, l3: List Nat)
+>     app_assoc : (l1: List Nat) -> (l1 ++ l2) ++ l3 = l1 ++ (l2 ++ l3)
+>     app_assoc  []     = Refl
+>     app_assoc (x::xs) = rewrite app_assoc xs in Refl
 
   Notice that, as when doing induction on natural numbers, this Idris proof is
 not especially illuminating as a static written document --- it is easy to see
@@ -503,22 +535,25 @@ case...
 
 > rev_length_firsttry : (l: List Nat) -> length (rev l) = length l
 > rev_length_firsttry  []     = Refl
-> rev_length_firsttry (x::xs) = ?Rewrite -- rewrite errors
+> rev_length_firsttry (x::xs) = ?Rewrite -- rewrite will error
 
-  This is the error you would get if you try to rewrite the inductive
-hypothesis:
+-----
+
+==== Error
 
 ```idris
     |
-... | > reverse_length_firsttry (x::xs) = rewrite rev_length_firsttry xs in ?Refl
-    |                                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      When checking right hand side of rev_length_firsttry with expected type
-              length (rev (x :: xs)) = length (x :: xs)
+... | > rev_length_firsttry (x::xs) = rewrite rev_length_firsttry xs in ?Refl
+    |                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+When checking right hand side of rev_length_firsttry with expected type
+                                       length (rev (x :: xs)) = length (x :: xs)
 
-      rewriting length (rev xs) to length xs did not change type length
+  rewriting length (rev xs) to length xs did not change type length
                                                  (rev xs ++ [x]) = S (length xs)
 
 ```
+
+-----
 
   So let's take the equation relating \app and `length` that would have enabled
 us to make progress and prove it as a separate lemma.
@@ -539,12 +574,12 @@ property.
 > rev_length : (l: List Nat) -> length (rev l) = length l
 > rev_length  []     = Refl
 > rev_length (x::xs) =
->     -- Rewrite (length rev xs ++ [x]) into length (rev xs) + (length [x])
->     --                                   = length (rev xs) + 1
+>     -- Replace (length rev xs ++ [x]) for length (rev xs) + (length [x])
+>     --                                  = length (rev xs) + 1
 >     rewrite app_length (rev xs) [x] in
->     -- Rewrite length (rev xs) + 1 into 1 + length (rev xs)
+>     -- Replace length (rev xs) + 1 for 1 + length (rev xs)
 >     rewrite plusCommutative (length (rev xs)) 1 in
->     -- Inductive hypothesis for length (rev xs) = length xs
+>     -- Inductive hypothesis --- length (rev xs) = length xs
 >     rewrite rev_length xs in Refl
 
   For comparison, here are informal proofs of these two theorems:
