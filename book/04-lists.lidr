@@ -775,3 +775,5 @@ difficulty of the proof depends on how you defined count!)
   (There is a hard way and an easy way to do this.)
 
 == Options
+
+<!--- TODO: Use elemIndex inseatd of index? -->
