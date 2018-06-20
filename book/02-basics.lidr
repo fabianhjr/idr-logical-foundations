@@ -135,9 +135,8 @@ documentation] site) We will use code-blocks (` ``` ` `code` ` ``` `) when using
 the library definition or bird tracks (`> code `) when using our own
 implementation.
 
-  Functions over booleans can be defined in the same way as above, however we
-can do cases implicitly over the definition of a function --- use whichever is
-convinient:
+  Functions over booleans can be defined in the same way as above, and we can do
+cases implicitly over the definition of a function:
 
 ```idris
 not : Bool -> Bool
@@ -241,22 +240,22 @@ all of its inputs are true, and false otherwise.
 === Function Types
 
   Every expression in Idris has a type, describing what sort of thing it
-computes. The `:t` command asks Idris to print the type of an expression.
+computes. The `:type` (With the short option `:t`) command asks Idris to print
+the type of an expression.
 
 ```idris
 ...> :t True
 Prelude.Bool.True : Bool
-Main.True : Boolean
-...> :t neg True
-neg True : Boolean
+...> :t not True
+not True : Bool
 ```
 
-  Functions like `neg` itself are also data values, just like True and False.
+  Functions like `not` itself are also data values, just like True and False.
 Their types are called function types, and they are written with arrows.
 
 ```idris
 ...> :t neg
-neg : Boolean -> Boolean
+not : Bool -> Bool
 ```
 
   The type of `neg`, written `Boolean` $\rightarrow$ `Boolean` and pronounced
@@ -706,21 +705,31 @@ fact using the absurd tactic, we get an error.
 >     plus_1_neq_0_firsttry : Not (n + 1 = 0)
 >     plus_1_neq_0_firsttry = ?absurd -- absurd will error
 
+```idris
+    |
+... | >     plus_1_neq_0_firsttry = absurd
+    |                               ~~~~~~
+When checking right hand side of Main.plus_1_neq_0_firsttry with expected type
+        Not (n + 1 = 0)
+
+Can't find implementation for Uninhabited (plus n 1 = 0)
+```
+
   The reason for this is that the definitions of `+` begins by performing a
-match on its arguments. But here, the first argument to `+` is the unknown
+match on its first argument. But here, the first argument to `+` is the unknown
 number `n` and the argument to Not is the compound expression `n + 1 = 0`;
 neither can be simplified.
 
   To make progress, we need to consider the possible forms of `n` separately. If
 `n` is `Z`, then we can calculate the final result of `Not (n + 1 = 0)` and
-check that it is, indeed, false. And if `n = S n'` for some `n'`, then, although
-we don't know exactly what number `n + 1` yields, we can calculate that, at
+check that it is, indeed, true. And if `n = S n'` for some `n'`, then, although
+we don't know exactly what number `n' + 1` yields, we can calculate that, at
 least, it will begin with one `S`, and this is enough to calculate that, again,
-Not (n + 1 = 0) will be false.
+Not (n + 1 = 0) will be true.
 
 > plus_1_neq_0 : (n: Nat) -> Not (n + 1 = 0)
 > plus_1_neq_0 Z     = absurd -- 1 /= 0
-> plus_1_neq_0 (S n) = absurd -- Unfolding equality
+> plus_1_neq_0 (S n) = absurd -- S (n + 1) /= Z
 
   Destructuring generates two subgoals, which we must then prove, separately, in
 order to get Idris to accept the theorem. In this example, each of the subgoals
@@ -756,29 +765,13 @@ obligations. For example:
 > and_associative False False True  = Refl
 > and_associative False False False = Refl
 
-However, there is a more interresting way to prove this if we use this last two
-sections together and two useful auxiliary lemmas:
+  However, there is a more straightforward way to prove `and_associative`
+without doing all the cases:
 
-> and_elimTrue : (a: Bool) -> a && True = a
-> and_elimTrue True  = Refl
-> and_elimTrue False = Refl
-
-> and_elimFalse : (a: Bool) -> a && False = False
-> and_elimFalse True  = Refl
-> and_elimFalse False = Refl
-
-> parameters (a, b: Bool)
->     and_associative' : (c: Bool) -> (a && b) && c = a && (b && c)
->                              -- Replace (a && b) && True for (a && b)
->     and_associative' True  = rewrite and_elimTrue (a && b) in
->                              -- Replace b && True for b
->                              rewrite and_elimTrue b in Refl
->                              -- Replace (a && b) && False for False
->     and_associative' False = rewrite and_elimFalse (a && b) in
->                              -- Replace b && False for False
->                              rewrite and_elimFalse b in
->                              -- Replace a && False for False
->                              rewrite and_elimFalse a in Refl
+> parameters (b, c: Bool)
+>     and_associative' : (a: Bool) -> (a && b) && c = a && (b && c)
+>     and_associative' True  = Refl -- b && c = b && c
+>     and_associative' False = Refl -- False = False
 
 ==== Exercise:
 
